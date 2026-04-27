@@ -1,40 +1,87 @@
-[
-  {
-    "id": "b4585647-e1dc-49e8-a2d3-dc3f46f76f21",
-    "name": "Chess Game 1",
-    "ownerId": "de8bcf93-1025-4892-bd26-57bacb92b71f",
-    "players": [
-      {
-        "id": "f74cd081-0bca-4624-9ddb-8aff13d14ea4",
-        "name": "pippo",
-        "joinedAt": "2026-02-24T16:08:46.309Z"
-      },
-      {
-        "id": "9a523b52-1d93-4cdf-82d5-b8d9dbc6d23b",
-        "name": "pippo",
-        "joinedAt": "2026-02-24T16:09:03.438Z"
-      }
-    ],
-    "moves": [
-      {
-        "id": "22072b02-9845-4d6d-9a7f-b84bce2b3416",
-        "playerId": "9a523b52-1d93-4cdf-82d5-b8d9dbc6d23b",
-        "data": {
-          "mossa": "e4"
+{
+  "games": [
+    {
+      "id": "RaccoltaUtenti",
+      "name": "RaccoltaUtenti",
+      "users": [
+        {
+          "id": "5ad79196-38f5-447d-b36e-7c724e6f8a3e",
+          "username": "Tommaso",
+          "password": "$2a$10$RAhVTw0WjpxLj3yEK8yON.vG5CJHAhJmaeRoG.fm7iT7/AOwEG15.",
+          "apiKey": "a0536298-9002-489b-9584-1ae4e9652e4849e76476aa47433fbfad94d53a55d56a",
+          "createdAt": "2026-03-23T14:11:06.862Z"
         },
-        "timestamp": "2026-02-24T16:37:15.462Z"
-      },
-      {
-        "id": "a53ca1e9-771f-42d8-a671-c55e0bdae2f5",
-        "playerId": "f74cd081-0bca-4624-9ddb-8aff13d14ea4",
-        "data": {
-          "mossa": "e5"
+        {
+          "id": "07ce3c40-be4d-4b46-bbe6-407f47669f0d",
+          "username": "Davide",
+          "password": "$2a$10$VaW8wQS7/CRigMguOU0FzOP8ZBlrytGxNQoxEzJCjrN7yOgkLsfTC",
+          "apiKey": "e7cb335f-339b-4e89-a5b6-f938ec1361a3d92127184b1640669007f7f1a04f2ee5",
+          "createdAt": "2026-03-23T14:25:08.106Z"
         },
-        "timestamp": "2026-02-24T16:37:50.601Z"
-      }
-    ],
-    "status": "active",
-    "createdAt": "2026-02-24T16:05:42.329Z",
-    "updatedAt": "2026-02-24T16:37:50.601Z"
-  }
-]
+        {
+          "id": "021a7550-846d-4581-b341-3be35152e29f",
+          "username": "Giovanni",
+          "password": "$2a$10$7/w8SgGgLpW9JIKHJuV1iujThTlKXDMjxazbsyZx0CJA5eaG/4.Lq",
+          "apiKey": "89802653-b398-41e6-bcd5-bb246c0381567dbf8db188c347058afa71488642960d",
+          "createdAt": "2026-03-23T14:25:41.568Z"
+        },
+        {
+          "id": "b88c41a6-959f-470f-a732-ea678dab33ed",
+          "username": "Paolo",
+          "password": "$2a$10$g/TKSgSpGXU1hcEV3dK9fOaknoMprO8eVGjqhDcLQeGhS5Xf9udhO",
+          "apiKey": "264626fb-feee-455e-b835-7a431428d6367dfa001fc1b34188a8120b5e6eb1670c",
+          "createdAt": "2026-03-23T14:26:31.427Z"
+        },
+        {
+          "id": "ca383b51-8b8e-4e12-a72a-8405bcb40124",
+          "username": "Marco",
+          "password": "$2a$10$VVgNBIEIihKKL1KUyHo0A.py.7st0fMAhdfVNXyAOr7RJA/MXlCDu",
+          "apiKey": "b097d24a-7664-46f3-8496-a0b9584259a17f8c238d61bf451a9e42b32a11a2e847",
+          "createdAt": "2026-04-13T09:53:12.344Z"
+        },
+        {
+          "id": "1c1e8b83-80ac-417c-b003-f7ebfdc6bdff",
+          "username": "GIACOMO",
+          "password": "$2a$10$FPtsF8mY/pLGnfMqMcImNOiMTZ.jfr36vjNXTqsLiYMm4L8DUHeBG",
+          "apiKey": "8b7f6a19-b10f-4cf6-aa72-623983233a94e276fa18878448119c6264f8906348b7",
+          "createdAt": "2026-04-13T14:06:23.208Z"
+        },
+        {
+          "id": "e33ab8eb-ab8d-4a64-8e17-a4940c9df123",
+          "username": "Renato",
+          "password": "$2a$10$9/oR82jOTLFOUCt4XQp9qe59TGay7/wfl/DDxUyV7CtMEVi0j80uK",
+          "apiKey": "ceab26e3-ff26-4bdf-8b6d-0e39d20d03317518db7a0eb84c51b0946acba3c51c8a",
+          "createdAt": "2026-04-15T16:36:14.381Z"
+        },
+        {
+          "id": "2c2b3d2c-667a-4db9-a7e9-a382f9ea4626",
+          "username": "Ranocchio69",
+          "password": "$2a$10$DiqcypC5K3behBMQ0t2OZO/OJ.MhHUSUNvJTfi/QthC7ZmRkd8LDi",
+          "apiKey": "b96b64b9-03c7-4d4d-a472-007a2738a371c05820fd6f8146eeb9c617a37aa94480",
+          "createdAt": "2026-04-15T16:51:42.604Z"
+        },
+        {
+          "id": "76bb07eb-f363-4896-8b03-ce1031b1025b",
+          "username": "Stefano",
+          "password": "$2a$10$JvoZeM.SQekKseItHagQWuOMRJ7dWPZzXA4nRHLnH1/4H4Plij8bm",
+          "apiKey": "13ebeffa-15c6-48cb-a916-2610aec9bda6d5ed17cff84d43c3ba2b6c28eaf2f7a6",
+          "createdAt": "2026-04-15T16:52:37.792Z"
+        },
+        {
+          "id": "8ca440d4-6ab3-4df9-b08f-33316ddc4a77",
+          "username": "Gianluca",
+          "password": "$2a$10$J9ptCo7p0wlFGhbZOK8oeevq3DwbsNKd5Mb5KkHt6aP1BYBQHMI2e",
+          "apiKey": "4e589789-9375-4f9c-acc3-2d124106f4cc70718f7a727942d29fbe87faf40d7aba",
+          "createdAt": "2026-04-15T16:58:11.336Z"
+        },
+        {
+          "id": "2b76115d-55f3-409c-be17-8eca58b17f74",
+          "username": "favij",
+          "password": "$2a$10$WxXM8cgsBJyz/YTzwKieCuHUzHRxt3QCwLkIT.3EhhJVa8O3rdSSK",
+          "apiKey": "0f5b03ac-0b84-463b-afc8-23a18d0cac3ca14aa4b995cd4f5b8b6a06ef2763c424",
+          "createdAt": "2026-04-27T08:18:07.929Z"
+        }
+      ]
+    }
+  ]
+}

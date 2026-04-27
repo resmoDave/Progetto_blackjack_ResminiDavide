@@ -10,7 +10,7 @@ const options = {
     },
     servers: [
       {
-        url: 'https://fluffy-sniffle-x9r9jvjx76g36jxr-3000.app.github.dev/',
+        url: 'https://zany-disco-5gj9gjrxrrvxc4rwq-3000.app.github.dev/',
         description: 'Development server'
       }
     ],

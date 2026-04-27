@@ -5,11 +5,14 @@ import {
   getGameById,
   updateGame,
   deleteGame,
+  terminateGame,
   addPlayerToGame,
   removePlayerFromGame,
   getGamePlayers,
   addMoveToGame,
-  getGameMoves
+  getGameMoves,
+  getGameMessages,
+  addMessageToGame
 } from '../db/database.js';
 
 const router = express.Router();
@@ -56,13 +59,21 @@ const router = express.Router();
  */
 router.post('/', (req, res) => {
   try {
-    const { name } = req.body;
+    const { name, playerName, code, solo } = req.body;
 
     if (!name || typeof name !== 'string' || name.trim().length === 0) {
       return res.status(400).json({ error: 'Invalid game name' });
     }
+    
+    if (!playerName || typeof playerName !== 'string' || playerName.trim().length === 0) {
+      return res.status(400).json({ error: 'Invalid player name' });
+    }
 
-    const game = createGame(req.user.id, name.trim());
+    if (!code || typeof code !== 'string' || code.length !== 6) {
+      return res.status(400).json({ error: 'Invalid game code' });
+    }
+
+    const game = createGame(req.user.id, name.trim(), playerName.trim(), code.toUpperCase(), null, solo === true);
     res.status(201).json({
       message: 'Game created successfully',
       game
@@ -184,7 +195,11 @@ router.get('/:gameId', (req, res) => {
       return res.status(404).json({ error: 'Game not found' });
     }
 
-    if (game.ownerId !== req.user.id) {
+    // Allow access if user is owner OR is a player in the game
+    const isOwner = game.ownerId === req.user.id;
+    const isPlayer = game.players.some(p => p.id === req.user.id);
+    
+    if (!isOwner && !isPlayer) {
       return res.status(403).json({ error: 'Access denied' });
     }
 
@@ -238,6 +253,57 @@ router.delete('/:gameId', (req, res) => {
 
     deleteGame(req.params.gameId);
     res.json({ message: 'Game deleted successfully' });
+  } catch (error) {
+    res.status(500).json({ error: error.message });
+  }
+});
+
+/**
+ * @swagger
+ * /games/{gameId}/terminate:
+ *   put:
+ *     summary: Terminate a game
+ *     description: Terminates a game and removes all players (owner only)
+ *     tags:
+ *       - Games
+ *     security:
+ *       - ApiKeyAuth: []
+ *     parameters:
+ *       - name: gameId
+ *         in: path
+ *         required: true
+ *         schema:
+ *           type: string
+ *     responses:
+ *       200:
+ *         description: Game terminated successfully
+ *       404:
+ *         description: Game not found
+ *       403:
+ *         description: Access denied
+ */
+// PUT /games/:gameId/terminate - Terminate a game (remove all players)
+router.put('/:gameId/terminate', (req, res) => {
+  try {
+    const game = getGameById(req.params.gameId);
+
+    if (!game) {
+      return res.status(404).json({ error: 'Game not found' });
+    }
+
+    if (game.ownerId !== req.user.id) {
+      return res.status(403).json({ error: 'Access denied' });
+    }
+
+    const playerIds = game.players.map(p => p.id);
+    deleteGame(req.params.gameId);
+    
+    res.json({ 
+      message: 'Game terminated successfully',
+      gameId: req.params.gameId,
+      playerCount: playerIds.length,
+      removedPlayers: playerIds
+    });
   } catch (error) {
     res.status(500).json({ error: error.message });
   }
@@ -309,19 +375,24 @@ router.post('/:gameId/players', (req, res) => {
       return res.status(404).json({ error: 'Game not found' });
     }
 
-    if (game.ownerId !== req.user.id) {
-      return res.status(403).json({ error: 'Access denied' });
-    }
-
     const { name } = req.body;
     if (!name || typeof name !== 'string' || name.trim().length === 0) {
       return res.status(400).json({ error: 'Invalid player name' });
     }
 
-    const player = addPlayerToGame(req.params.gameId, name.trim());
+    const player = addPlayerToGame(req.params.gameId, req.user.id, name.trim());
+    
+    if (!player) {
+      return res.status(400).json({ error: 'Player already in game' });
+    }
+    
+    // Return the updated game with all players
+    const updatedGame = getGameById(req.params.gameId);
+    
     res.status(201).json({
       message: 'Player added successfully',
-      player
+      player,
+      game: updatedGame
     });
   } catch (error) {
     res.status(400).json({ error: error.message });
@@ -337,7 +408,11 @@ router.get('/:gameId/players', (req, res) => {
       return res.status(404).json({ error: 'Game not found' });
     }
 
-    if (game.ownerId !== req.user.id) {
+    // Allow access if user is owner OR is a player in the game
+    const isOwner = game.ownerId === req.user.id;
+    const isPlayer = game.players.some(p => p.id === req.user.id);
+    
+    if (!isOwner && !isPlayer) {
       return res.status(403).json({ error: 'Access denied' });
     }
 
@@ -390,17 +465,29 @@ router.delete('/:gameId/players/:playerId', (req, res) => {
       return res.status(404).json({ error: 'Game not found' });
     }
 
-    if (game.ownerId !== req.user.id) {
+    // Allow owner to remove any player, or player to remove themselves
+    const isOwner = game.ownerId === req.user.id;
+    const isSelfRemoval = req.params.playerId === req.user.id;
+    
+    if (!isOwner && !isSelfRemoval) {
       return res.status(403).json({ error: 'Access denied' });
     }
 
-    const result = removePlayerFromGame(req.params.gameId, req.params.playerId);
+    const updatedGame = removePlayerFromGame(req.params.gameId, req.params.playerId);
     
-    if (!result) {
+    if (updatedGame === false) {
       return res.status(404).json({ error: 'Player not found' });
     }
 
-    res.json({ message: 'Player removed successfully' });
+    if (updatedGame === null) {
+      // la partita non esiste più perché l'ultimo giocatore (host) è uscito
+      return res.json({ message: 'Player removed successfully, game closed because no players remaining' });
+    }
+
+    res.json({
+      message: 'Player removed successfully',
+      game: updatedGame
+    });
   } catch (error) {
     res.status(500).json({ error: error.message });
   }
@@ -587,6 +674,223 @@ router.get('/:gameId/moves/:moveId', (req, res) => {
     res.json({ move });
   } catch (error) {
     res.status(500).json({ error: error.message });
+  }
+});
+
+// POST /games/:gameId/start - Start a game
+router.post('/:gameId/start', (req, res) => {
+  try {
+    const game = getGameById(req.params.gameId);
+
+    if (!game) {
+      return res.status(404).json({ error: 'Game not found' });
+    }
+
+    if (game.ownerId !== req.user.id) {
+      return res.status(403).json({ error: 'Access denied - only owner can start the game' });
+    }
+
+    const updatedGame = updateGame(req.params.gameId, { status: 'in-progress' });
+    
+    res.json({
+      message: 'Game started successfully!',
+      game: updatedGame
+    });
+  } catch (error) {
+    res.status(400).json({ error: error.message });
+  }
+});
+
+/**
+ * @swagger
+ * /games/{gameId}/messages:
+ *   get:
+ *     summary: Get all messages in a game
+ *     description: Retrieves all chat messages from a game
+ *     tags:
+ *       - Chat
+ *     security:
+ *       - ApiKeyAuth: []
+ *     parameters:
+ *       - name: gameId
+ *         in: path
+ *         required: true
+ *         schema:
+ *           type: string
+ *     responses:
+ *       200:
+ *         description: List of messages
+ *       404:
+ *         description: Game not found
+ *       403:
+ *         description: Access denied
+ *   post:
+ *     summary: Send a message in a game
+ *     description: Sends a chat message in the game
+ *     tags:
+ *       - Chat
+ *     security:
+ *       - ApiKeyAuth: []
+ *     parameters:
+ *       - name: gameId
+ *         in: path
+ *         required: true
+ *         schema:
+ *           type: string
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             properties:
+ *               text:
+ *                 type: string
+ *             required:
+ *               - text
+ *             example:
+ *               text: "Nice move!"
+ *     responses:
+ *       201:
+ *         description: Message sent successfully
+ *       400:
+ *         description: Invalid message text
+ *       404:
+ *         description: Game not found
+ *       403:
+ *         description: Access denied
+ */
+// GET /games/:gameId/messages - Get all messages
+router.get('/:gameId/messages', (req, res) => {
+  try {
+    const game = getGameById(req.params.gameId);
+
+    if (!game) {
+      return res.status(404).json({ error: 'Game not found' });
+    }
+
+    // Allow access if user is owner OR is a player in the game
+    const isOwner = game.ownerId === req.user.id;
+    const isPlayer = game.players.some(p => p.id === req.user.id);
+    
+    if (!isOwner && !isPlayer) {
+      return res.status(403).json({ error: 'Access denied' });
+    }
+
+    const messages = getGameMessages(req.params.gameId);
+    res.json({
+      gameId: req.params.gameId,
+      count: messages.length,
+      messages
+    });
+  } catch (error) {
+    res.status(500).json({ error: error.message });
+  }
+});
+
+// POST /games/:gameId/messages - Send a message
+router.post('/:gameId/messages', (req, res) => {
+  try {
+    const game = getGameById(req.params.gameId);
+
+    if (!game) {
+      return res.status(404).json({ error: 'Game not found' });
+    }
+
+    // Allow access if user is owner OR is a player in the game
+    const isOwner = game.ownerId === req.user.id;
+    const isPlayer = game.players.some(p => p.id === req.user.id);
+    
+    if (!isOwner && !isPlayer) {
+      return res.status(403).json({ error: 'Access denied' });
+    }
+
+    const { text } = req.body;
+    if (!text || typeof text !== 'string' || text.trim().length === 0) {
+      return res.status(400).json({ error: 'Invalid message text' });
+    }
+
+    // Trova il nome del giocatore dal tavolo (non dal nome account)
+    const player = game.players.find(p => p.id === req.user.id);
+    const playerName = player ? player.name : req.user.username;
+
+    const message = addMessageToGame(
+      req.params.gameId,
+      req.user.id,
+      playerName,
+      text.trim()
+    );
+
+    res.status(201).json({
+      message: 'Message sent successfully',
+      data: message
+    });
+  } catch (error) {
+    res.status(400).json({ error: error.message });
+  }
+});
+
+/**
+ * @swagger
+ * /games/{gameId}/leave:
+ *   post:
+ *     summary: Leave a game
+ *     description: Leave a game (if owner leaves, game is deleted and all players are kicked out)
+ *     tags:
+ *       - Games
+ *     security:
+ *       - ApiKeyAuth: []
+ *     parameters:
+ *       - name: gameId
+ *         in: path
+ *         required: true
+ *         schema:
+ *           type: string
+ *     responses:
+ *       200:
+ *         description: Successfully left the game
+ *       404:
+ *         description: Game not found
+ *       403:
+ *         description: Access denied (not a player in this game)
+ */
+// POST /games/:gameId/leave - Leave a game
+router.post('/:gameId/leave', (req, res) => {
+  try {
+    const game = getGameById(req.params.gameId);
+
+    if (!game) {
+      return res.status(404).json({ error: 'Game not found' });
+    }
+
+    // Check if user is a player in the game
+    const isPlayer = game.players.some(p => p.id === req.user.id);
+    const isOwner = game.ownerId === req.user.id;
+    
+    if (!isPlayer) {
+      return res.status(403).json({ error: 'Access denied - not a player in this game' });
+    }
+
+    const result = removePlayerFromGame(req.params.gameId, req.user.id);
+
+    if (result.status === 'deleted') {
+      res.json({
+        message: 'Game deleted and all players kicked out',
+        gameId: req.params.gameId,
+        gameDeleted: true,
+        wasOwner: isOwner
+      });
+    } else if (result.status === 'player-removed') {
+      res.json({
+        message: 'Successfully left the game',
+        game: result.game,
+        gameDeleted: false
+      });
+    } else {
+      return res.status(404).json({ error: 'Game not found' });
+    }
+  } catch (error) {
+    res.status(400).json({ error: error.message });
   }
 });
 

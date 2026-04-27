@@ -1,22 +1,2234 @@
-<!DOCTYPE html>
-<!-- indica la versione 5 di html -->
+<!doctype html>
 <html lang="it">
-<!-- indica l'inizio della sezione HTML -->
-<head>
-    <!-- qui non si può inserire contenuto della pagina -->
-    <meta charset="UTF-8">
-    <!-- indica l'insieme dei caratteri ammissibili all'interno della pagina -->
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <!-- inizializza la gestione responsive della interfaccia della pagina VINCOLANTE PER L'ACCESSIBILITA' -->
-    <title>FRONTEND</title>
-</head>
-<body>
-    ciao
-    <!-- apertura del marcatore a -->
-    <a href="./pages/splash.html">
-        clicca qui per vedere l'animazione
-    </a>
-    <!-- marcatore di chiusura-->
-    
-</body>
+    <head>
+        <title>BLACKJACK</title>
+        <meta charset="utf-8" />
+        <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no" />
+
+        <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet"
+            integrity="sha384-T3c6CoIi6uLrA9TneNEoa7RxnatzjcDSCmG1MXxSR1GAsXEV/Dwwykc2MPK8M2HN" crossorigin="anonymous" />
+        <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+        <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;600;700;900&family=Cinzel:wght@400;600;700&family=Lato:wght@300;400;700&display=swap" rel="stylesheet">
+
+        <style>
+            :root {
+                --felt: #0d2918;
+                --felt-mid: #163520;
+                --felt-light: #1e4a2d;
+                --gold: #c9a84c;
+                --gold-bright: #f0c96e;
+                --gold-dark: #8a6c28;
+                --ivory: #f5f0e8;
+                --ivory-dim: #d9d0bc;
+                --red-card: #c0392b;
+                --shadow-deep: rgba(0,0,0,0.7);
+                --shadow-gold: rgba(201,168,76,0.25);
+            }
+
+            * { box-sizing: border-box; }
+
+            body {
+                background-color: var(--felt);
+                background-image:
+                    radial-gradient(ellipse at 20% 20%, rgba(30,74,45,0.6) 0%, transparent 60%),
+                    radial-gradient(ellipse at 80% 80%, rgba(30,74,45,0.5) 0%, transparent 60%),
+                    url("data:image/svg+xml,%3Csvg width='60' height='60' viewBox='0 0 60 60' xmlns='http://www.w3.org/2000/svg'%3E%3Cg fill='none' fill-rule='evenodd'%3E%3Cg fill='%23ffffff' fill-opacity='0.015'%3E%3Cpath d='M36 34v-4h-2v4h-4v2h4v4h2v-4h4v-2h-4zm0-30V0h-2v4h-4v2h4v4h2V6h4V4h-4zM6 34v-4H4v4H0v2h4v4h2v-4h4v-2H6zM6 4V0H4v4H0v2h4v4h2V6h4V4H6z'/%3E%3C/g%3E%3C/g%3E%3C/svg%3E");
+                min-height: 100vh;
+                display: flex;
+                flex-direction: column;
+                font-family: 'Lato', sans-serif;
+                color: var(--ivory);
+            }
+
+            /* ── SCROLLBAR ── */
+            ::-webkit-scrollbar { width: 6px; }
+            ::-webkit-scrollbar-track { background: var(--felt); }
+            ::-webkit-scrollbar-thumb { background: var(--gold-dark); border-radius: 3px; }
+
+            /* ── LAYOUT ── */
+            main {
+                flex: 1;
+                display: flex;
+                align-items: center;
+                justify-content: center;
+                padding: 24px 20px;
+                gap: 20px;
+            }
+
+            .game-container {
+                display: flex;
+                align-items: center;
+                justify-content: center;
+                flex: 0 1 auto;
+            }
+
+            /* ── CARD ── */
+            .game-card {
+                border: none;
+                border-radius: 4px;
+                width: 100%;
+                max-width: 760px;
+                overflow: hidden;
+                position: relative;
+                box-shadow:
+                    0 0 0 1px var(--gold-dark),
+                    0 0 0 3px rgba(201,168,76,0.12),
+                    0 30px 80px rgba(0,0,0,0.7),
+                    inset 0 1px 0 rgba(240,201,110,0.15);
+                background: #0f2318;
+            }
+
+            .game-card::before {
+                content: '';
+                position: absolute;
+                inset: 3px;
+                border: 1px solid rgba(201,168,76,0.2);
+                border-radius: 2px;
+                pointer-events: none;
+                z-index: 10;
+            }
+
+            /* ── HEADER ── */
+            .game-header {
+                background: linear-gradient(180deg, #1a0a00 0%, #2c1500 40%, #1a0e02 100%);
+                text-align: center;
+                padding: 36px 24px 28px;
+                border-bottom: 1px solid var(--gold-dark);
+                position: relative;
+                overflow: hidden;
+            }
+
+            .game-header::before {
+                content: '';
+                position: absolute;
+                inset: 0;
+                background:
+                    radial-gradient(ellipse at 50% 0%, rgba(201,168,76,0.18) 0%, transparent 70%);
+                pointer-events: none;
+            }
+
+            .game-header::after {
+                content: '♠ ♥ ♣ ♦';
+                position: absolute;
+                bottom: 8px;
+                left: 50%;
+                transform: translateX(-50%);
+                font-size: 0.7rem;
+                letter-spacing: 10px;
+                color: rgba(201,168,76,0.3);
+            }
+
+            .game-header h1 {
+                margin: 0 0 6px;
+                font-family: 'Cinzel', serif;
+                font-size: 2.6rem;
+                font-weight: 700;
+                letter-spacing: 6px;
+                color: var(--gold-bright);
+                text-shadow:
+                    0 0 30px rgba(240,201,110,0.6),
+                    0 2px 4px rgba(0,0,0,0.8);
+                position: relative;
+            }
+
+            .game-header .subtitle {
+                font-family: 'Lato', sans-serif;
+                font-size: 0.75rem;
+                letter-spacing: 4px;
+                text-transform: uppercase;
+                color: rgba(201,168,76,0.5);
+                margin: 0;
+            }
+
+            .header-dragons {
+                font-size: 1.1rem;
+                color: var(--gold-dark);
+                opacity: 0.7;
+                vertical-align: middle;
+                margin: 0 12px;
+            }
+
+            /* ── USER HEADER ROW ── */
+            #userHeader {
+                margin-top: 14px;
+                background: rgba(0,0,0,0.3);
+                border: 1px solid rgba(201,168,76,0.2);
+                border-radius: 3px;
+                padding: 8px 14px;
+                font-size: 0.85rem;
+                color: var(--ivory-dim);
+                position: relative;
+                z-index: 1;
+            }
+
+            #currentUsername {
+                color: var(--gold);
+                font-weight: 700;
+                font-family: 'Cinzel', serif;
+                font-size: 0.9rem;
+            }
+
+            #logoutBtn {
+                background: transparent !important;
+                border: 1px solid rgba(192,57,43,0.5) !important;
+                color: #e57368 !important;
+                font-size: 0.75rem;
+                padding: 3px 12px !important;
+                border-radius: 2px;
+                letter-spacing: 1px;
+                font-family: 'Lato', sans-serif;
+                transition: all 0.25s;
+            }
+
+            #logoutBtn:hover {
+                background: rgba(192,57,43,0.2) !important;
+                border-color: #e57368 !important;
+            }
+
+            /* ── BODY ── */
+            .game-body {
+                padding: 30px 32px 32px;
+                background:
+                    linear-gradient(180deg, rgba(13,41,24,0.95) 0%, rgba(10,30,18,1) 100%);
+            }
+
+            /* ── LABELS & INPUTS ── */
+            .form-label {
+                font-family: 'Lato', sans-serif;
+                font-weight: 700;
+                font-size: 0.7rem;
+                letter-spacing: 2.5px;
+                text-transform: uppercase;
+                color: var(--gold);
+                margin-bottom: 8px;
+                display: block;
+            }
+
+            .form-control, .form-select {
+                background: rgba(0,0,0,0.35);
+                border: 1px solid rgba(201,168,76,0.25);
+                border-radius: 3px;
+                padding: 11px 15px;
+                color: var(--ivory);
+                font-family: 'Lato', sans-serif;
+                font-size: 0.95rem;
+                transition: all 0.25s;
+            }
+
+            .form-control::placeholder { color: rgba(245,240,232,0.25); }
+
+            .form-control:focus, .form-select:focus {
+                background: rgba(0,0,0,0.5);
+                border-color: var(--gold);
+                box-shadow: 0 0 0 3px rgba(201,168,76,0.12), inset 0 1px 3px rgba(0,0,0,0.3);
+                color: var(--ivory);
+                outline: none;
+            }
+
+            .form-select option {
+                background: #0f2318;
+                color: var(--ivory);
+            }
+
+            .form-control.is-valid { border-color: #2ecc71 !important; box-shadow: 0 0 0 3px rgba(46,204,113,0.1) !important; }
+            .form-control.is-invalid { border-color: var(--red-card) !important; box-shadow: 0 0 0 3px rgba(192,57,43,0.1) !important; }
+
+            /* ── TABS ── */
+            .tab-buttons {
+                display: flex;
+                gap: 0;
+                margin-bottom: 28px;
+                border-bottom: 1px solid rgba(201,168,76,0.2);
+                padding-bottom: 0;
+            }
+
+            .tab-btn {
+                flex: 1;
+                padding: 12px 16px;
+                border: none;
+                background: transparent;
+                border-bottom: 2px solid transparent;
+                margin-bottom: -1px;
+                font-family: 'Lato', sans-serif;
+                font-weight: 700;
+                font-size: 0.75rem;
+                letter-spacing: 2px;
+                text-transform: uppercase;
+                color: rgba(245,240,232,0.35);
+                transition: all 0.25s;
+                cursor: pointer;
+            }
+
+            .tab-btn:hover { color: var(--gold); }
+
+            .tab-btn.active {
+                color: var(--gold-bright);
+                border-bottom-color: var(--gold);
+            }
+
+            .tab-btn i { margin-right: 6px; }
+
+            .tab-pane { display: none; }
+            .tab-pane.active { display: block; animation: fadeUp 0.3s ease; }
+
+            @keyframes fadeUp {
+                from { opacity: 0; transform: translateY(6px); }
+                to { opacity: 1; transform: translateY(0); }
+            }
+
+            /* ── BUTTONS ── */
+            .btn-action {
+                background: linear-gradient(135deg, #b8892a 0%, #d4a843 40%, #c9a84c 60%, #a07020 100%);
+                border: none;
+                border-radius: 3px;
+                padding: 14px 24px;
+                font-family: 'Cinzel', serif;
+                font-size: 0.95rem;
+                font-weight: 600;
+                letter-spacing: 2px;
+                color: #1a0e02;
+                width: 100%;
+                transition: all 0.25s;
+                margin-top: 10px;
+                position: relative;
+                overflow: hidden;
+                box-shadow: 0 4px 15px rgba(0,0,0,0.4), inset 0 1px 0 rgba(255,255,255,0.2);
+                cursor: pointer;
+            }
+
+            .btn-action::before {
+                content: '';
+                position: absolute;
+                inset: 0;
+                background: linear-gradient(180deg, rgba(255,255,255,0.15) 0%, transparent 60%);
+                pointer-events: none;
+            }
+
+            .btn-action:hover:not(:disabled) {
+                transform: translateY(-2px);
+                box-shadow: 0 8px 25px rgba(201,168,76,0.4), inset 0 1px 0 rgba(255,255,255,0.25);
+                filter: brightness(1.08);
+            }
+
+            .btn-action:active:not(:disabled) { transform: translateY(0); }
+
+            .btn-action:disabled {
+                opacity: 0.4;
+                cursor: not-allowed;
+                filter: grayscale(0.4);
+            }
+
+            .btn-outline-action {
+                background: transparent;
+                border: 1px solid rgba(201,168,76,0.4);
+                border-radius: 3px;
+                padding: 12px 16px;
+                font-family: 'Lato', sans-serif;
+                font-size: 0.8rem;
+                font-weight: 700;
+                letter-spacing: 1.5px;
+                text-transform: uppercase;
+                color: var(--gold);
+                width: 100%;
+                transition: all 0.25s;
+                cursor: pointer;
+            }
+
+            .btn-outline-action:hover {
+                background: rgba(201,168,76,0.1);
+                border-color: var(--gold);
+                color: var(--gold-bright);
+            }
+
+            /* ── GAME CODE DISPLAY ── */
+            .game-code-display {
+                background: rgba(0,0,0,0.3);
+                border: 1px solid rgba(201,168,76,0.25);
+                border-radius: 3px;
+                padding: 22px;
+                text-align: center;
+                margin: 20px 0;
+                position: relative;
+            }
+
+            .game-code-display > span,
+            .game-code-display > i {
+                font-size: 0.7rem;
+                letter-spacing: 3px;
+                text-transform: uppercase;
+                color: rgba(201,168,76,0.5);
+                font-family: 'Lato', sans-serif;
+                font-weight: 700;
+            }
+
+            .game-code {
+                font-family: 'Courier New', monospace;
+                font-size: 2.8rem;
+                font-weight: 900;
+                letter-spacing: 10px;
+                color: var(--gold-bright);
+                display: block;
+                margin: 12px 0;
+                text-shadow: 0 0 20px rgba(240,201,110,0.5);
+            }
+
+            .copy-btn {
+                background: transparent;
+                border: 1px solid rgba(201,168,76,0.3);
+                color: var(--gold);
+                font-size: 0.75rem;
+                letter-spacing: 1.5px;
+                text-transform: uppercase;
+                cursor: pointer;
+                padding: 5px 16px;
+                border-radius: 2px;
+                transition: all 0.25s;
+                font-family: 'Lato', sans-serif;
+                font-weight: 700;
+            }
+
+            .copy-btn:hover {
+                background: rgba(201,168,76,0.15);
+                border-color: var(--gold);
+            }
+
+            /* ── PLAYERS LIST ── */
+            .players-list {
+                background: rgba(0,0,0,0.25);
+                border: 1px solid rgba(201,168,76,0.15);
+                border-radius: 3px;
+                padding: 12px;
+                margin: 14px 0;
+                min-height: 130px;
+                max-height: 280px;
+                overflow-y: auto;
+            }
+
+            .player-item {
+                display: flex;
+                align-items: center;
+                gap: 12px;
+                padding: 10px 12px;
+                border-bottom: 1px solid rgba(201,168,76,0.08);
+                animation: fadeIn 0.4s ease;
+            }
+
+            .player-item:last-child { border-bottom: none; }
+
+            .player-avatar {
+                width: 38px;
+                height: 38px;
+                background: linear-gradient(135deg, #163520, #1e4a2d);
+                border: 1px solid rgba(201,168,76,0.35);
+                border-radius: 50%;
+                display: flex;
+                align-items: center;
+                justify-content: center;
+                color: var(--gold);
+                font-family: 'Cinzel', serif;
+                font-weight: 700;
+                font-size: 1rem;
+                flex-shrink: 0;
+            }
+
+            .player-host {
+                background: var(--gold);
+                color: #1a0e02;
+                font-size: 0.6rem;
+                letter-spacing: 1.5px;
+                text-transform: uppercase;
+                padding: 2px 8px;
+                border-radius: 2px;
+                margin-left: 8px;
+                font-weight: 900;
+                font-family: 'Lato', sans-serif;
+            }
+
+            .player-status {
+                margin-left: auto;
+                font-size: 0.75rem;
+                color: #2ecc71;
+                font-family: 'Lato', sans-serif;
+            }
+
+            /* ── SECTION TITLE ── */
+            .section-title {
+                font-family: 'Lato', sans-serif;
+                font-weight: 700;
+                font-size: 0.7rem;
+                letter-spacing: 2.5px;
+                text-transform: uppercase;
+                color: var(--gold);
+                margin-bottom: 10px;
+            }
+
+            /* ── STATUS BADGE ── */
+            .status-badge {
+                padding: 5px 14px;
+                border-radius: 2px;
+                font-size: 0.72rem;
+                font-weight: 700;
+                letter-spacing: 1.5px;
+                text-transform: uppercase;
+                font-family: 'Lato', sans-serif;
+                display: inline-block;
+            }
+
+            .status-waiting {
+                background: rgba(201,168,76,0.1);
+                color: var(--gold);
+                border: 1px solid rgba(201,168,76,0.3);
+            }
+
+            /* ── AVAILABLE GAMES ── */
+            .available-games { margin-top: 20px; padding-top: 20px; border-top: 1px solid rgba(201,168,76,0.15); }
+
+            .recent-games {
+                display: flex;
+                flex-wrap: wrap;
+                gap: 8px;
+                margin-top: 10px;
+            }
+
+            .recent-game {
+                background: rgba(0,0,0,0.3);
+                border: 1px solid rgba(201,168,76,0.2);
+                padding: 10px 16px;
+                border-radius: 3px;
+                font-size: 0.85rem;
+                cursor: pointer;
+                transition: all 0.25s;
+                color: var(--ivory-dim);
+                font-family: 'Lato', sans-serif;
+            }
+
+            .recent-game:hover {
+                background: rgba(201,168,76,0.08);
+                border-color: var(--gold);
+                color: var(--gold-bright);
+            }
+
+            .recent-game strong { color: var(--ivory); }
+            .recent-game small { color: rgba(245,240,232,0.4); }
+
+            .recent-game .btn-success {
+                background: linear-gradient(135deg, #1e6b3d, #27ae60) !important;
+                border: none !important;
+                border-radius: 2px !important;
+                font-size: 0.7rem !important;
+                letter-spacing: 1px;
+                padding: 4px 10px !important;
+                font-family: 'Lato', sans-serif !important;
+                font-weight: 700 !important;
+                text-transform: uppercase;
+                transition: all 0.2s;
+            }
+
+            .recent-game .btn-success:hover { filter: brightness(1.15); }
+
+            /* ── ERRORS ── */
+            .error-message {
+                color: #e57368;
+                font-size: 0.8rem;
+                letter-spacing: 0.5px;
+                margin-top: 5px;
+                display: none;
+                font-family: 'Lato', sans-serif;
+            }
+
+            /* ── SERVER STATUS ── */
+            .server-status {
+                text-align: center;
+                padding: 10px;
+                border-radius: 3px;
+                font-size: 0.78rem;
+                letter-spacing: 1px;
+                font-family: 'Lato', sans-serif;
+                font-weight: 700;
+                text-transform: uppercase;
+                color: rgba(245,240,232,0.3);
+            }
+
+            .server-status.text-success { color: #2ecc71 !important; }
+            .server-status.text-warning { color: var(--gold) !important; }
+
+            /* ── EMPTY STATE ── */
+            .empty-state {
+                text-align: center;
+                color: rgba(245,240,232,0.2);
+                padding: 20px;
+                font-style: italic;
+                font-size: 0.85rem;
+                font-family: 'Lato', sans-serif;
+            }
+
+            /* ── LOADING SPINNER ── */
+            .loading-spinner {
+                display: inline-block;
+                width: 16px;
+                height: 16px;
+                border: 2px solid rgba(26,14,2,0.3);
+                border-radius: 50%;
+                border-top-color: #1a0e02;
+                animation: spin 0.8s linear infinite;
+                margin-right: 8px;
+                vertical-align: middle;
+            }
+
+            /* ── CHAT SIDEBAR ── */
+            .chat-sidebar {
+                width: 300px;
+                height: calc(100vh - 180px);
+                min-height: 400px;
+                background: #080f0b;
+                border: 1px solid rgba(201,168,76,0.2);
+                border-radius: 4px;
+                box-shadow: 0 0 0 1px rgba(201,168,76,0.08), 0 20px 50px rgba(0,0,0,0.5);
+                display: none;
+                flex-direction: column;
+                overflow: hidden;
+            }
+
+            .chat-sidebar.visible { display: flex; animation: slideRight 0.3s ease; }
+
+            @keyframes slideRight {
+                from { opacity: 0; transform: translateX(16px); }
+                to { opacity: 1; transform: translateX(0); }
+            }
+
+            .chat-header {
+                background: linear-gradient(135deg, #1a0a00, #2c1500);
+                border-bottom: 1px solid rgba(201,168,76,0.2);
+                color: var(--gold);
+                padding: 14px 16px;
+                text-align: center;
+                font-family: 'Cinzel', serif;
+                font-size: 0.8rem;
+                font-weight: 600;
+                letter-spacing: 3px;
+                text-transform: uppercase;
+            }
+
+            .chat-messages {
+                flex: 1;
+                overflow-y: auto;
+                padding: 10px;
+                display: flex;
+                flex-direction: column;
+                gap: 5px;
+                background: #080f0b;
+            }
+
+            .chat-message {
+                background: rgba(255,255,255,0.04);
+                border: 1px solid rgba(255,255,255,0.06);
+                padding: 8px 10px;
+                border-radius: 3px;
+                font-size: 0.82rem;
+                word-wrap: break-word;
+                animation: slideIn 0.25s ease-out;
+            }
+
+            .chat-message.system {
+                background: rgba(201,168,76,0.06);
+                border-color: rgba(201,168,76,0.15);
+                color: rgba(201,168,76,0.7);
+                font-size: 0.75rem;
+                text-align: center;
+                font-style: italic;
+            }
+
+            .chat-message.deleted {
+                background: rgba(192,57,43,0.1);
+                border-color: rgba(192,57,43,0.2);
+                color: #e57368;
+                font-size: 0.75rem;
+                text-align: center;
+                font-weight: 600;
+            }
+
+            .chat-message-user {
+                font-weight: 700;
+                color: var(--gold);
+                font-size: 0.68rem;
+                letter-spacing: 1px;
+                text-transform: uppercase;
+                margin-bottom: 2px;
+                font-family: 'Lato', sans-serif;
+            }
+
+            .chat-message-text {
+                color: var(--ivory-dim);
+                line-height: 1.4;
+                font-family: 'Lato', sans-serif;
+            }
+
+            .chat-input-area {
+                padding: 10px;
+                border-top: 1px solid rgba(201,168,76,0.15);
+                display: flex;
+                gap: 6px;
+                background: rgba(0,0,0,0.3);
+            }
+
+            .chat-input {
+                flex: 1;
+                background: rgba(0,0,0,0.4);
+                border: 1px solid rgba(201,168,76,0.2);
+                border-radius: 2px;
+                padding: 8px 10px;
+                font-size: 0.83rem;
+                color: var(--ivory);
+                font-family: 'Lato', sans-serif;
+                max-height: 38px;
+                transition: border-color 0.2s;
+            }
+
+            .chat-input::placeholder { color: rgba(245,240,232,0.2); }
+            .chat-input:focus { outline: none; border-color: rgba(201,168,76,0.45); }
+
+            .chat-send-btn {
+                background: linear-gradient(135deg, #1e6b3d, #27ae60);
+                color: white;
+                border: none;
+                border-radius: 2px;
+                padding: 8px 12px;
+                cursor: pointer;
+                transition: all 0.2s;
+                min-width: 38px;
+                font-size: 0.85rem;
+            }
+
+            .chat-send-btn:hover { filter: brightness(1.15); transform: translateY(-1px); }
+            .chat-send-btn:disabled { background: rgba(255,255,255,0.08); cursor: not-allowed; }
+
+            /* ── AUTH SCREEN ── */
+            #authScreen {
+                background: transparent;
+            }
+
+            /* ── FOOTER ── */
+            footer {
+                text-align: center;
+                padding: 14px;
+                font-size: 0.7rem;
+                letter-spacing: 8px;
+                color: rgba(201,168,76,0.2);
+                font-family: 'Lato', sans-serif;
+                border-top: 1px solid rgba(201,168,76,0.08);
+            }
+
+            /* ── DIVIDER ── */
+            .gold-divider {
+                border: none;
+                height: 1px;
+                background: linear-gradient(90deg, transparent, rgba(201,168,76,0.3), transparent);
+                margin: 20px 0;
+            }
+
+            /* ── RESPONSIVE ── */
+            @media (max-width: 1200px) {
+                main { flex-direction: column; }
+                .chat-sidebar { width: 100%; height: 240px; }
+                .game-container { max-width: 100%; }
+            }
+
+            @media (max-width: 768px) {
+                main { padding: 12px; }
+                .game-body { padding: 20px 18px 24px; }
+                .game-header h1 { font-size: 2rem; letter-spacing: 4px; }
+                .chat-sidebar { height: 200px; }
+            }
+
+            /* ── MOBILE ── */
+            @media (max-width: 480px) {
+                body { font-size: 14px; }
+
+                .game-header { padding: 18px 16px 14px; }
+                .game-header h1 { font-size: 1.5rem; letter-spacing: 2px; }
+                .suit-decoration { font-size: 1rem; gap: 10px; margin: 10px 0 4px; }
+
+                .game-body { padding: 16px 12px 18px; }
+                .game-card { border-radius: 14px; }
+
+                /* Tab buttons */
+                .tab-buttons { flex-direction: row; gap: 6px; }
+                .tab-btn { padding: 8px 10px; font-size: 0.75rem; letter-spacing: 1px; }
+
+                /* Form inputs più grandi per tocco */
+                .form-control { padding: 12px 14px; font-size: 0.95rem; }
+                label { font-size: 0.8rem; }
+
+                /* Pulsanti più grandi per tocco */
+                .btn-action {
+                    padding: 13px 16px;
+                    font-size: 0.85rem;
+                    border-radius: 10px;
+                    width: 100%;
+                    justify-content: center;
+                }
+
+                /* Player list */
+                .players-grid { grid-template-columns: 1fr 1fr; gap: 8px; }
+                .player-card-item { padding: 10px; }
+                .player-avatar { width: 36px; height: 36px; font-size: 1rem; }
+                .player-name { font-size: 0.8rem; }
+
+                /* Chat sidebar diventa barra in basso */
+                .chat-sidebar {
+                    width: 100%;
+                    height: 180px;
+                    border-radius: 12px;
+                    margin-top: 8px;
+                }
+                .chat-messages { font-size: 0.78rem; }
+                .chat-input-area input { font-size: 0.85rem; padding: 8px 10px; }
+
+                /* Info partita */
+                .game-info-grid { grid-template-columns: 1fr 1fr; gap: 8px; }
+                .info-item { padding: 10px; }
+                .info-value { font-size: 1.1rem; }
+                .info-label { font-size: 0.65rem; }
+
+                /* Codice partita */
+                .game-code { font-size: 1.8rem; letter-spacing: 6px; }
+
+                main { padding: 8px; gap: 8px; }
+            }
+
+            @media (max-width: 360px) {
+                .game-header h1 { font-size: 1.2rem; }
+                .game-code { font-size: 1.4rem; letter-spacing: 4px; }
+                .tab-btn { font-size: 0.68rem; padding: 7px 8px; }
+            }
+
+            /* ── ANIMATIONS ── */
+            @keyframes slideIn {
+                from { opacity: 0; transform: translateY(8px); }
+                to { opacity: 1; transform: translateY(0); }
+            }
+
+            @keyframes fadeIn {
+                from { opacity: 0; transform: translateY(-6px); }
+                to { opacity: 1; transform: translateY(0); }
+            }
+
+            @keyframes spin {
+                to { transform: rotate(360deg); }
+            }
+
+            /* ── SUIT DECORATION ── */
+            .suit-decoration {
+                display: flex;
+                justify-content: center;
+                gap: 16px;
+                margin: 16px 0 6px;
+                font-size: 1.3rem;
+            }
+
+            .suit-decoration .spade, .suit-decoration .club { color: rgba(245,240,232,0.15); }
+            .suit-decoration .heart, .suit-decoration .diamond { color: rgba(192,57,43,0.25); }
+        </style>
+    </head>
+
+    <body>
+        <!-- ── AUTH SCREEN ── -->
+        <div id="authScreen" class="container py-5">
+            <div class="row justify-content-center">
+                <div class="col-12 col-md-8 col-lg-5">
+                    <div class="game-card">
+                        <div class="game-header">
+                            <div style="font-size:0.65rem;letter-spacing:5px;text-transform:uppercase;color:rgba(201,168,76,0.4);margin-bottom:10px;font-family:'Lato',sans-serif;">
+                                Casino Privato
+                            </div>
+                            <h1 style="font-size:2rem;letter-spacing:5px;">
+                                <i class="fas fa-lock header-dragons"></i>
+                                Accesso
+                            </h1>
+                            <p class="subtitle mt-1">Identifica il tuo profilo per entrare al tavolo</p>
+                        </div>
+                        <div class="game-body">
+                            <div class="mb-4">
+                                <label class="form-label">
+                                    <i class="fas fa-user me-1"></i> Nome utente
+                                </label>
+                                <input type="text" class="form-control" id="authUsername" placeholder="il tuo username" autocomplete="username">
+                            </div>
+                            <div class="mb-4">
+                                <label class="form-label">
+                                    <i class="fas fa-key me-1"></i> Password
+                                </label>
+                                <input type="password" class="form-control" id="authPassword" placeholder="minimo 6 caratteri" autocomplete="current-password">
+                            </div>
+                            <div class="d-grid gap-2">
+                                <button id="loginButton" class="btn-action">
+                                    <i class="fas fa-sign-in-alt me-2"></i> Accedi
+                                </button>
+                                <button id="registerButton" class="btn-outline-action">
+                                    <i class="fas fa-user-plus me-2"></i> Registrati
+                                </button>
+                            </div>
+                            <div id="authMessage" class="mt-3 text-center" style="display:none;color:#e57368;font-size:0.85rem;font-family:'Lato',sans-serif;"></div>
+                            <div class="suit-decoration">
+                                <span class="spade">♠</span>
+                                <span class="heart">♥</span>
+                                <span class="club">♣</span>
+                                <span class="diamond">♦</span>
+                            </div>
+                            <div class="text-center" style="font-size:0.72rem;color:rgba(245,240,232,0.2);letter-spacing:1px;font-family:'Lato',sans-serif;">
+                                Usa lo stesso username per accessi futuri
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- ── GAME SCREEN ── -->
+        <main id="gameScreen" style="display:none;">
+            <div class="game-container">
+                <div class="container">
+                    <div class="row justify-content-center">
+                        <div class="col-12 col-md-10 col-lg-8">
+                            <div class="game-card">
+                                <!-- HEADER -->
+                                <div class="game-header">
+                                    <h1>
+                                        <i class="fas fa-dragon header-dragons"></i>
+                                        BLACKJACK
+                                        <i class="fas fa-dragon header-dragons"></i>
+                                    </h1>
+                                    <p class="subtitle">By Resmo</p>
+                                    <div id="userHeader" class="mt-3 d-flex justify-content-between align-items-center" style="display:none !important;">
+                                        <div>
+                                            <i class="fas fa-user-check me-1" style="color:rgba(201,168,76,0.5);font-size:0.75rem;"></i>
+                                            <span id="currentUsername"></span>
+                                        </div>
+                                        <button class="btn" id="logoutBtn">
+                                            <i class="fas fa-sign-out-alt me-1"></i> Esci
+                                        </button>
+                                    </div>
+                                </div>
+
+                                <!-- BODY -->
+                                <div class="game-body">
+                                    <!-- Nome giocatore -->
+                                    <div id="playerNameSection" class="mb-4">
+                                        <label class="form-label">
+                                            <i class="fas fa-user me-1"></i> Il tuo nome al tavolo
+                                        </label>
+                                        <input type="text" class="form-control" id="playerNameInput"
+                                               placeholder="Come vuoi essere chiamato?" maxlength="20" autocomplete="on">
+                                        <div class="error-message" id="playerNameError">
+                                            <i class="fas fa-exclamation-triangle me-1"></i> Inserisci un nome valido (minimo 2 caratteri)
+                                        </div>
+                                    </div>
+
+                                    <!-- TABS -->
+                                    <div class="tab-buttons">
+                                        <button class="tab-btn active" onclick="switchTab('create')">
+                                            <i class="fas fa-plus-circle"></i> Crea partita
+                                        </button>
+                                        <button class="tab-btn" onclick="switchTab('join')">
+                                            <i class="fas fa-sign-in-alt"></i> Unisciti
+                                        </button>
+                                        <button class="tab-btn" onclick="switchTab('solo')">
+                                            <i class="fas fa-user"></i> Solo
+                                        </button>
+                                    </div>
+
+                                    <!-- TAB CREA -->
+                                    <div id="createTab" class="tab-pane active">
+                                        <form id="createGameForm">
+                                            <div class="mb-4">
+                                                <label class="form-label">
+                                                    <i class="fas fa-crown me-1"></i> Nome del tavolo
+                                                </label>
+                                                <input type="text" class="form-control" id="tableName"
+                                                       placeholder="es. Tavolo principale" value="Tavolo principale">
+                                            </div>
+                                            <div class="mb-4">
+                                                <label class="form-label">
+                                                    <i class="fas fa-users me-1"></i> Giocatori massimi
+                                                </label>
+                                                <select class="form-select" id="maxPlayers">
+                                                    <option value="2">2 giocatori</option>
+                                                    <option value="3">3 giocatori</option>
+                                                    <option value="4" selected>4 giocatori</option>
+                                                    <option value="5">5 giocatori</option>
+                                                    <option value="6">6 giocatori</option>
+                                                </select>
+                                            </div>
+                                            <button type="submit" class="btn-action" id="createBtn">
+                                                <i class="fas fa-dice me-2"></i> Apri il tavolo
+                                            </button>
+                                        </form>
+                                    </div>
+
+                                    <!-- TAB JOIN -->
+                                    <div id="joinTab" class="tab-pane">
+                                        <form id="joinGameForm">
+                                            <div class="mb-4">
+                                                <label class="form-label">
+                                                    <i class="fas fa-key me-1"></i> Codice partita
+                                                </label>
+                                                <input type="text" class="form-control" id="gameCode"
+                                                       placeholder="Codice a 6 caratteri"
+                                                       maxlength="6" autocomplete="off"
+                                                       style="font-family:'Courier New',monospace;font-size:1.2rem;letter-spacing:5px;text-align:center;">
+                                                <div class="error-message" id="gameCodeError">
+                                                    <i class="fas fa-exclamation-triangle me-1"></i> Codice non valido (6 caratteri)
+                                                </div>
+                                            </div>
+                                            <button type="submit" class="btn-action" id="joinBtn">
+                                                <i class="fas fa-sign-in-alt me-2"></i> Siediti al tavolo
+                                            </button>
+
+                                            <div class="available-games mt-4">
+                                                <label class="form-label">
+                                                    <i class="fas fa-table me-1"></i> Tavoli disponibili
+                                                </label>
+                                                <div id="availableGamesList" class="recent-games"></div>
+                                                <div id="availableGamesEmpty" class="empty-state" style="display:none;">
+                                                    <i class="fas fa-moon me-1"></i> Nessun tavolo aperto in questo momento
+                                                </div>
+                                            </div>
+                                        </form>
+                                    </div>
+
+                                    <!-- TAB SOLO -->
+                                    <div id="soloTab" class="tab-pane">
+                                        <div class="text-center" style="padding: 10px 0;">
+                                            <div style="font-size: 3rem; margin-bottom: 12px;">🎴</div>
+                                            <p style="color: rgba(245,240,232,0.5); font-size: 0.85rem; font-family: 'Lato', sans-serif; margin-bottom: 24px; line-height: 1.6;">
+                                                Gioca da solo contro il dealer.<br>
+                                                La partita sarà privata e invisibile agli altri utenti.
+                                            </p>
+                                            <button class="btn-action" onclick="createSoloGame()" id="soloBtn">
+                                                <i class="fas fa-play me-2"></i> Inizia partita singleplayer
+                                            </button>
+                                        </div>
+                                    </div>
+
+                                    <!-- GAME CREATED / LOBBY -->
+                                    <div id="gameCreatedSection" style="display: none;">
+                                        <div class="game-code-display">
+                                            <span><i class="fas fa-share-nodes me-1"></i> Codice partita</span>
+                                            <div class="game-code" id="displayGameCode">------</div>
+                                            <button class="copy-btn" onclick="copyGameCode()">
+                                                <i class="far fa-copy me-1"></i> Copia
+                                            </button>
+                                        </div>
+
+                                        <div class="d-flex justify-content-between align-items-center mb-2 mt-3">
+                                            <span class="section-title">
+                                                <i class="fas fa-users me-1"></i> Giocatori in sala
+                                            </span>
+                                            <span class="status-badge status-waiting" id="gameStatus">
+                                                <i class="fas fa-hourglass-half me-1"></i> In attesa
+                                            </span>
+                                        </div>
+
+                                        <div class="players-list" id="playersList">
+                                            <div class="empty-state">
+                                                <i class="fas fa-spinner fa-pulse me-1"></i> In attesa di giocatori...
+                                            </div>
+                                        </div>
+
+                                        <div class="text-center mt-2 mb-3">
+                                            <small style="color:rgba(245,240,232,0.2);font-size:0.72rem;letter-spacing:1px;font-family:'Lato',sans-serif;">
+                                                <i class="fas fa-info-circle me-1"></i>
+                                                Condividi il codice con i tuoi amici
+                                            </small>
+                                        </div>
+
+                                        <button class="btn-action mt-1" onclick="startGame()" id="startGameBtn" disabled>
+                                            <i class="fas fa-play me-2"></i> Inizia partita
+                                        </button>
+
+                                        <div class="d-flex gap-2 mt-2">
+                                            <button class="btn-outline-action" onclick="leaveGame()">
+                                                <i class="fas fa-sign-out-alt me-1"></i> Lascia
+                                            </button>
+                                            <button class="btn-outline-action" onclick="cancelGame()">
+                                                <i class="fas fa-times me-1"></i> Annulla
+                                            </button>
+                                        </div>
+                                    </div>
+
+                                    <hr class="gold-divider">
+
+                                    <div id="serverStatus" class="server-status">
+                                        <i class="fas fa-circle-notch fa-spin me-1"></i> Verifica connessione...
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- CHAT SIDEBAR -->
+            <div class="chat-sidebar" id="chatSidebar">
+                <div class="chat-header">
+                    <i class="fas fa-comments me-2"></i> Chat
+                </div>
+                <div class="chat-messages" id="chatMessages">
+                    <div class="chat-message system">
+                        💬 Benvenuto nella chat!
+                    </div>
+                </div>
+                <div class="chat-input-area">
+                    <input type="text" class="chat-input" id="chatInput" placeholder="Scrivi..." />
+                    <button class="chat-send-btn" id="chatSendBtn" onclick="sendChatMessage()">
+                        <i class="fas fa-paper-plane"></i>
+                    </button>
+                </div>
+            </div>
+        </main>
+
+        <footer>
+            ♠ &nbsp; ♥ &nbsp; ♣ &nbsp; ♦
+        </footer>
+
+        <!-- Scripts (invariati) -->
+        <script src="https://cdn.jsdelivr.net/npm/@popperjs/core@2.11.8/dist/umd/popper.min.js"></script>
+        <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.min.js"></script>
+        <script src="https://cdn.socket.io/4.5.4/socket.io.min.js"></script>
+        
+        <script>
+            // Stato dell'applicazione
+            let currentPlayer = {
+                name: '',
+                id: null,
+                isHost: false,
+                apiKey: null
+            };
+            
+            let currentGame = {
+                code: null,
+                id: null,
+                name: '',
+                players: [],
+                maxPlayers: 4,
+                minBet: 10,
+                status: 'waiting'
+            };
+
+            let availableGamesByCode = {}; // mapping code -> gameId
+            let currentAvailableGames = [];
+            let availableGamesPollingInterval = null; // per il polling delle partite disponibili
+            let gamePlayersPollingInterval = null; // per il polling dei giocatori in partita
+            
+            // ========== CHAT & WEBSOCKET ==========
+            let socket = null;
+            let chatConnected = false;
+
+            function initializeChat() {
+                if (socket) {
+                    socket.disconnect();
+                }
+                
+                const apiKey = getApiKey();
+                if (!apiKey) {
+                    console.log('Chat: Nessuna apiKey, skipping WebSocket connection');
+                    return;
+                }
+
+                try {
+                    socket = io(window.location.origin, {
+                        auth: {
+                            token: apiKey
+                        }
+                    });
+
+                    socket.on('connect', () => {
+                        chatConnected = true;
+                        console.log('✅ Chat connected');
+                        addSystemMessage('✅ Connesso alla chat!');
+                    });
+
+                    socket.on('disconnect', () => {
+                        chatConnected = false;
+                        console.log('❌ Chat disconnected');
+                    });
+
+                    socket.on('new-message', (message) => {
+                        addChatMessage(message.username, message.text, false);
+                    });
+
+                    socket.on('player-joined', (data) => {
+                        if (data.username !== currentPlayer.name) {
+                            addSystemMessage(`👤 ${data.username} è entrato nella partita`);
+                        }
+                        // Aggiorna subito la lista giocatori senza aspettare il polling
+                        if (currentGame && data.players) {
+                            currentGame.players = data.players;
+                            updatePlayersList();
+                        }
+                    });
+
+                    socket.on('spectator-joined', (data) => {
+                        addSystemMessage(data.message);
+                    });
+
+                    socket.on('joined-as-spectator', (data) => {
+                        addSystemMessage('👀 Partita in corso! Vieni reindirizzato al tavolo...');
+                        localStorage.setItem('currentGame', JSON.stringify(currentGame));
+                        localStorage.setItem('currentPlayer', JSON.stringify(currentPlayer));
+                        setTimeout(() => {
+                            window.location.href = '/frontend/pages/blackjack.html';
+                        }, 800);
+                    });
+
+                    socket.on('player-left', (data) => {
+                        addSystemMessage(`👋 ${data.username} ha abbandonato la partita`);
+                        // Aggiorna la lista giocatori rimuovendo chi è uscito
+                        if (currentGame && currentGame.players) {
+                            currentGame.players = currentGame.players.filter(p => p.name !== data.username);
+                            updatePlayersList();
+                        }
+                    });
+
+                    socket.on('game-deleted', (data) => {
+                        addDeletedMessage(`❌ ${data.message}`);
+                        
+                        // Se è il nostro gameId, usciamo e torniamo al menu
+                        if (data.gameId === currentGame.id) {
+                            setTimeout(() => {
+                                currentGame = {
+                                    code: null,
+                                    id: null,
+                                    name: '',
+                                    players: [],
+                                    maxPlayers: 4,
+                                    minBet: 10,
+                                    status: 'waiting'
+                                };
+                                clearChatMessages();
+                                addSystemMessage('💬 Benvenuto nella chat!');
+                                showGameLobby();
+                                loadAvailableGames();
+                            }, 1000);
+                        }
+                    });
+
+                    socket.on('start-game', (data) => {
+                        addSystemMessage('🎮 La partita è iniziata! Reindirizzamento in corso...');
+                        
+                        // Salva i dati della partita per il tavolo di blackjack
+                        if (data.gameId === currentGame.id) {
+                            localStorage.setItem('currentGame', JSON.stringify(currentGame));
+                            localStorage.setItem('currentPlayer', JSON.stringify(currentPlayer));
+                            
+                            // Redirige alla pagina blackjack dopo un breve delay
+                            setTimeout(() => {
+                                window.location.href = '/frontend/pages/blackjack.html';
+                            }, 800);
+                        }
+                    });
+
+                    socket.on('connect_error', (error) => {
+                        console.error('Chat connection error:', error.message);
+                    });
+
+                } catch (error) {
+                    console.error('Failed to initialize chat:', error);
+                }
+            }
+
+            function joinChatLobby(gameId) {
+                // Se il socket non è pronto, aspetta
+                if (!socket || !chatConnected) {
+                    // Prova in 500ms
+                    setTimeout(() => {
+                        if (socket && chatConnected) {
+                            socket.emit('join-lobby', gameId);
+                            console.log('✅ Joined chat lobby:', gameId);
+                        } else {
+                            console.log('⏳ Aspetto connessione socket...');
+                            setTimeout(() => joinChatLobby(gameId), 500);
+                        }
+                    }, 200);
+                    return;
+                }
+                
+                socket.emit('join-lobby', gameId);
+                console.log('✅ Joined chat lobby:', gameId);
+            }
+
+            function leaveChatLobby(gameId) {
+                if (socket && chatConnected) {
+                    socket.emit('leave-lobby', gameId);
+                }
+            }
+
+            function sendChatMessage() {
+                const chatInput = document.getElementById('chatInput');
+                const text = chatInput.value.trim();
+
+                if (!text) return;
+                
+                if (!socket) {
+                    addSystemMessage('❌ Chat non connessa');
+                    return;
+                }
+                
+                if (!chatConnected) {
+                    addSystemMessage('⏳ Chat in connessione...');
+                    return;
+                }
+                
+                if (!currentGame.id) {
+                    addSystemMessage('❌ Nessuna partita selezionata');
+                    return;
+                }
+
+                socket.emit('send-message', {
+                    gameId: currentGame.id,
+                    text
+                });
+
+                chatInput.value = '';
+            }
+
+            function addChatMessage(username, text, isSelf = false) {
+                const messagesContainer = document.getElementById('chatMessages');
+                const messageEl = document.createElement('div');
+                messageEl.className = 'chat-message';
+                messageEl.innerHTML = `
+                    <div class="chat-message-user">${username}${isSelf ? ' (tu)' : ''}</div>
+                    <div class="chat-message-text">${escapeHtml(text)}</div>
+                `;
+                messagesContainer.appendChild(messageEl);
+                messagesContainer.scrollTop = messagesContainer.scrollHeight;
+            }
+
+            function addSystemMessage(message) {
+                const messagesContainer = document.getElementById('chatMessages');
+                const messageEl = document.createElement('div');
+                messageEl.className = 'chat-message system';
+                messageEl.textContent = message;
+                messagesContainer.appendChild(messageEl);
+                messagesContainer.scrollTop = messagesContainer.scrollHeight;
+            }
+
+            function addDeletedMessage(message) {
+                const messagesContainer = document.getElementById('chatMessages');
+                const messageEl = document.createElement('div');
+                messageEl.className = 'chat-message deleted';
+                messageEl.textContent = message;
+                messagesContainer.appendChild(messageEl);
+                messagesContainer.scrollTop = messagesContainer.scrollHeight;
+            }
+
+            function clearChatMessages() {
+                document.getElementById('chatMessages').innerHTML = '';
+            }
+
+            function escapeHtml(text) {
+                const map = {
+                    '&': '&amp;',
+                    '<': '&lt;',
+                    '>': '&gt;',
+                    '"': '&quot;',
+                    "'": '&#039;'
+                };
+                return text.replace(/[&<>"']/g, m => map[m]);
+            }
+            
+            // All'avvio
+            document.addEventListener('DOMContentLoaded', function() {
+                loadSavedData();
+                setupEventListeners();
+                checkServerConnection();
+                ensureAuthView();
+            });
+            
+            function getApiKey() {
+                return currentPlayer.apiKey || (currentPlayer.apiKey = (JSON.parse(localStorage.getItem('authUser') || '{}').apiKey || null));
+            }
+
+            function loadSavedData() {
+                const savedName = localStorage.getItem('playerName');
+                if (savedName) {
+                    currentPlayer.name = savedName;
+                }
+                currentPlayer.id = localStorage.getItem('playerId') || 'player_' + Date.now();
+
+                const storedAuthUser = localStorage.getItem('authUser');
+                if (storedAuthUser) {
+                    const auth = JSON.parse(storedAuthUser);
+                    currentPlayer.name = auth.username;
+                    currentPlayer.id = auth.id || currentPlayer.id;
+                    currentPlayer.apiKey = auth.apiKey || null;
+                }
+            }
+            
+            function setupEventListeners() {
+                document.getElementById('loginButton').addEventListener('click', loginUser);
+                document.getElementById('registerButton').addEventListener('click', registerUser);
+                document.getElementById('logoutBtn').addEventListener('click', logoutUser);
+
+                // Form creazione partita
+                document.getElementById('createGameForm').addEventListener('submit', function(e) {
+                    e.preventDefault();
+                    createGame();
+                });
+                
+                // Form join partita
+                document.getElementById('joinGameForm').addEventListener('submit', function(e) {
+                    e.preventDefault();
+                    joinGame();
+                });
+                
+                // Input nome giocatore
+                document.getElementById('playerNameInput').addEventListener('input', function(e) {
+                    currentPlayer.name = e.target.value.trim();
+                    localStorage.setItem('playerName', currentPlayer.name);
+                });
+                
+                // Input codice partita (auto uppercase)
+                document.getElementById('gameCode').addEventListener('input', function(e) {
+                    this.value = this.value.toUpperCase().replace(/[^A-Z0-9]/g, '');
+                    document.getElementById('gameCodeError').style.display = 'none';
+                });
+                
+                // Chat input (Invio per inviare)
+                document.getElementById('chatInput').addEventListener('keypress', function(e) {
+                    if (e.key === 'Enter' && !e.shiftKey) {
+                        e.preventDefault();
+                        sendChatMessage();
+                    }
+                });
+                
+                // Validazione nome in tempo reale
+                document.getElementById('playerNameInput').addEventListener('input', function() {
+                    if (this.value.trim().length >= 2) {
+                        this.classList.remove('is-invalid');
+                        this.classList.add('is-valid');
+                        document.getElementById('playerNameError').style.display = 'none';
+                    } else {
+                        this.classList.remove('is-valid');
+                        if (this.value.trim().length > 0) {
+                            this.classList.add('is-invalid');
+                        }
+                    }
+                });
+            }
+
+            function ensureAuthView() {
+                const authUser = localStorage.getItem('authUser');
+                if (authUser) {
+                    const user = JSON.parse(authUser);
+                    // Prepopola i campi del form di login se c'è un utente salvato
+                    document.getElementById('authUsername').value = user.username || '';
+                    document.getElementById('authPassword').value = user.password || '';
+                }
+                // Mostra sempre la pagina di login all'avvio
+                showAuthUI();
+            }
+
+            function showAuthUI() {
+                document.getElementById('authScreen').style.display = 'block';
+                document.getElementById('gameScreen').style.display = 'none';
+            }
+
+            function showGameUI() {
+                document.getElementById('authScreen').style.display = 'none';
+                document.getElementById('gameScreen').style.display = 'block';
+                document.getElementById('currentUsername').textContent = currentPlayer.name || 'Giocatore';
+                document.getElementById('userHeader').style.display = 'flex';
+                document.getElementById('playerNameInput').value = currentPlayer.name;
+                
+                // Inizializza la chat quando l'utente entra in game UI
+                initializeChat();
+                clearChatMessages();
+                addSystemMessage('💬 Benvenuto nella chat!');
+                
+                loadAvailableGames();
+            }
+
+            async function loadAvailableGames() {
+                const listContainer = document.getElementById('availableGamesList');
+                const emptyMessage = document.getElementById('availableGamesEmpty');
+
+                listContainer.innerHTML = '<small style="color:rgba(245,240,232,0.3);font-family:Lato,sans-serif;"><i class="fas fa-spinner fa-pulse me-1"></i> Caricamento...</small>';
+                emptyMessage.style.display = 'none';
+
+                let games = [];
+
+                try {
+                    const response = await fetch('/games/available');
+                    if (response.ok) {
+                        const data = await response.json();
+                        games = (data.games || []).map(game => ({
+                            id: game.id,
+                            name: game.name || game.tableName || 'Partita ' + (game.id || ''),
+                            code: (game.code || (game.id || '').replace(/-/g, '').substring(0, 6).toUpperCase()),
+                            playersCount: (game.players || []).length,
+                            playersRaw: game.players || [],
+                            maxPlayers: game.maxPlayers || 6,
+                            minBet: game.minBet || 10,
+                            status: game.status || 'waiting'
+                        }));
+                    } else {
+                        const errorData = await response.json().catch(() => ({}));
+                        throw new Error(errorData.error || 'Impossibile caricare le partite dal server');
+                    }
+                } catch (err) {
+                    listContainer.innerHTML = `<small style="color:#e57368;font-family:Lato,sans-serif;"><i class="fas fa-exclamation-triangle me-1"></i> ${err.message}</small>`;
+                    emptyMessage.style.display = 'none';
+                    return;
+                }
+
+                if (!games || games.length === 0) {
+                    listContainer.innerHTML = '';
+                    emptyMessage.style.display = 'block';
+                    availableGamesByCode = {};
+                    return;
+                }
+
+                emptyMessage.style.display = 'none';
+                listContainer.innerHTML = '';
+                availableGamesByCode = {};
+                currentAvailableGames = games;
+
+                games.forEach(game => {
+                    const code = game.code;
+                    availableGamesByCode[code] = game.id;
+
+                    const item = document.createElement('div');
+                    item.className = 'recent-game';
+                    item.style.display = 'flex';
+                    item.style.alignItems = 'center';
+                    item.style.justifyContent = 'space-between';
+                    item.style.minWidth = '100%';
+
+                    const text = document.createElement('div');
+                    text.innerHTML = `<strong>${game.name}</strong><br><small>${game.playersCount}/${game.maxPlayers} giocatori • ${game.status}</small>`;
+
+                    const button = document.createElement('button');
+                    button.className = 'btn btn-sm btn-success';
+                    button.innerHTML = '<i class="fas fa-sign-in-alt"></i> Entra';
+                    button.onclick = () => joinAvailableGame(game);
+
+                    item.appendChild(text);
+                    item.appendChild(button);
+                    listContainer.appendChild(item);
+                });
+            }
+
+            function joinAvailableGame(game) {
+                document.getElementById('gameCode').value = game.code;
+                switchTab('join');
+                joinGame();
+            }
+
+            // Funzioni per il polling delle partite disponibili
+            function startAvailableGamesPolling() {
+                // Ferma polling esistente se presente
+                stopAvailableGamesPolling();
+                
+                // Avvia polling ogni 5 secondi
+                availableGamesPollingInterval = setInterval(async () => {
+                    try {
+                        await loadAvailableGames();
+                    } catch (error) {
+                        console.log('Errore nel polling delle partite:', error);
+                    }
+                }, 5000);
+            }
+
+            function stopAvailableGamesPolling() {
+                if (availableGamesPollingInterval) {
+                    clearInterval(availableGamesPollingInterval);
+                    availableGamesPollingInterval = null;
+                }
+            }
+
+            // Funzioni per il polling dei giocatori in partita
+            function startGamePlayersPolling() {
+                // Ferma polling esistente se presente
+                stopGamePlayersPolling();
+                
+                // Avvia polling ogni 3 secondi per aggiornare i giocatori
+                gamePlayersPollingInterval = setInterval(async () => {
+                    if (currentGame && currentGame.id) {
+                        try {
+                            const apiKey = getApiKey();
+                            if (!apiKey) return;
+                            
+                            const response = await fetch(`/games/${currentGame.id}`, {
+                                headers: {
+                                    'x-api-key': apiKey
+                                }
+                            });
+                            
+                            if (response.ok) {
+                                const data = await response.json();
+                                const updatedGame = data.game;
+                                
+                                // Aggiorna la lista giocatori se è cambiata
+                                if (JSON.stringify(currentGame.players) !== JSON.stringify(updatedGame.players)) {
+                                    currentGame.players = updatedGame.players;
+                                    updatePlayersList();
+                                }
+                                
+                                // Aggiorna anche altri dati se necessario
+                                currentGame.status = updatedGame.status;
+                                currentGame.name = updatedGame.name;
+                            }
+                        } catch (error) {
+                            console.log('Errore nel polling dei giocatori:', error);
+                        }
+                    }
+                }, 3000);
+            }
+
+            function stopGamePlayersPolling() {
+                if (gamePlayersPollingInterval) {
+                    clearInterval(gamePlayersPollingInterval);
+                    gamePlayersPollingInterval = null;
+                }
+            }
+
+            async function registerUser() {
+                const username = document.getElementById('authUsername').value.trim();
+                const password = document.getElementById('authPassword').value;
+                const authMessage = document.getElementById('authMessage');
+
+                if (!username || username.length < 2) {
+                    authMessage.textContent = 'Nome utente non valido (min 2 caratteri).';
+                    authMessage.style.display = 'block';
+                    return;
+                }
+                if (!password || password.length < 6) {
+                    authMessage.textContent = 'Password min 6 caratteri.';
+                    authMessage.style.display = 'block';
+                    return;
+                }
+
+                try {
+                    const response = await fetch('/register', {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({ username, password })
+                    });
+                    const data = await response.json();
+
+                    if (!response.ok) {
+                        authMessage.textContent = data.error || 'Errore registrazione.';
+                        authMessage.style.display = 'block';
+                        return;
+                    }
+
+                    localStorage.setItem('authUser', JSON.stringify(data.user));
+                    localStorage.setItem('playerName', data.user.username);
+                    localStorage.setItem('playerId', data.user.id);
+                    // Salva i dati in currentPlayer (INCLUSO apiKey!)
+                    currentPlayer.name = data.user.username;
+                    currentPlayer.id = data.user.id;
+                    currentPlayer.apiKey = data.user.apiKey;
+                    authMessage.style.display = 'none';
+                    showGameUI();
+                } catch (error) {
+                    authMessage.textContent = 'Errore di rete. Riprova.';
+                    authMessage.style.display = 'block';
+                }
+            }
+
+            async function loginUser() {
+                const username = document.getElementById('authUsername').value.trim();
+                const password = document.getElementById('authPassword').value;
+                const authMessage = document.getElementById('authMessage');
+
+                if (!username || username.length < 2) {
+                    authMessage.textContent = 'Nome utente non valido (min 2 caratteri).';
+                    authMessage.style.display = 'block';
+                    return;
+                }
+                if (!password || password.length < 6) {
+                    authMessage.textContent = 'Password min 6 caratteri.';
+                    authMessage.style.display = 'block';
+                    return;
+                }
+
+                try {
+                    const response = await fetch('/login', {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({ username, password })
+                    });
+                    const data = await response.json();
+
+                    if (!response.ok) {
+                        authMessage.textContent = data.error || 'Errore login.';
+                        authMessage.style.display = 'block';
+                        return;
+                    }
+
+                    // Salva i dati dell'utente in localStorage
+                    localStorage.setItem('authUser', JSON.stringify(data.user));
+                    localStorage.setItem('playerName', data.user.username);
+                    localStorage.setItem('playerId', data.user.id);
+                    // Salva i dati in currentPlayer (INCLUSO apiKey!)
+                    currentPlayer.name = data.user.username;
+                    currentPlayer.id = data.user.id;
+                    currentPlayer.apiKey = data.user.apiKey;
+                    authMessage.style.display = 'none';
+                    showGameUI();
+                } catch (error) {
+                    authMessage.textContent = 'Errore di rete. Riprova.';
+                    authMessage.style.display = 'block';
+                }
+            }
+
+            function logoutUser() {
+                // Ferma i polling
+                stopAvailableGamesPolling();
+                stopGamePlayersPolling();
+                
+                // Disconnetti dal WebSocket se connesso
+                if (socket && socket.connected) {
+                    socket.disconnect();
+                }
+                
+                // PULISCI TUTTI I DATI DELL'UTENTE DA LOCALSTORAGE
+                localStorage.removeItem('authUser');
+                localStorage.removeItem('playerName');
+                localStorage.removeItem('playerId');
+                localStorage.removeItem('currentGame');
+                localStorage.removeItem('currentPlayer');
+                
+                // PULISCI TUTTE LE VARIABILI GLOBALI
+                currentPlayer = {
+                    name: '',
+                    id: null,
+                    isHost: false,
+                    apiKey: null
+                };
+                
+                currentGame = {
+                    code: null,
+                    id: null,
+                    name: '',
+                    players: [],
+                    status: 'waiting'
+                };
+                
+                // Pulisci UI
+                document.getElementById('authUsername').value = '';
+                document.getElementById('authPassword').value = '';
+                document.getElementById('authMessage').style.display = 'none';
+                document.getElementById('playerNameInput').value = '';
+                document.getElementById('playerNameInput').classList.remove('is-valid', 'is-invalid');
+                
+                // Torna alla schermata di login
+                showAuthUI();
+                
+                console.log('✅ Logout completato - Tutti i dati puliti');
+            }
+
+            function switchTab(tab) {
+                document.querySelectorAll('.tab-btn').forEach(btn => btn.classList.remove('active'));
+                document.querySelectorAll('.tab-pane').forEach(pane => pane.classList.remove('active'));
+
+                if (tab === 'create') {
+                    document.querySelectorAll('.tab-btn')[0].classList.add('active');
+                    document.getElementById('createTab').classList.add('active');
+                    stopAvailableGamesPolling();
+                } else if (tab === 'join') {
+                    document.querySelectorAll('.tab-btn')[1].classList.add('active');
+                    document.getElementById('joinTab').classList.add('active');
+                    startAvailableGamesPolling();
+                } else if (tab === 'solo') {
+                    document.querySelectorAll('.tab-btn')[2].classList.add('active');
+                    document.getElementById('soloTab').classList.add('active');
+                    stopAvailableGamesPolling();
+                }
+            }
+
+            async function createSoloGame() {
+                if (!validatePlayerName()) return;
+
+                const apiKey = getApiKey();
+                if (!apiKey) {
+                    alert('Devi essere loggato per giocare.');
+                    return;
+                }
+
+                showLoading('soloBtn', true);
+
+                try {
+                    const gameCode = Math.random().toString(36).substring(2, 8).toUpperCase();
+
+                    const response = await fetch('/games', {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/json',
+                            'x-api-key': apiKey
+                        },
+                        body: JSON.stringify({
+                            name: `Solo - ${currentPlayer.name}`,
+                            playerName: currentPlayer.name,
+                            code: gameCode,
+                            solo: true
+                        })
+                    });
+                    const data = await response.json();
+
+                    if (!response.ok) throw new Error(data.error || 'Errore creazione partita');
+
+                    const createdGame = data.game;
+
+                    currentGame = {
+                        id: createdGame.id,
+                        code: gameCode,
+                        name: createdGame.name,
+                        players: createdGame.players || [],
+                        maxPlayers: 1,
+                        status: 'active',
+                        solo: true
+                    };
+
+                    currentPlayer.isHost = true;
+
+                    // Salva e avvia direttamente
+                    localStorage.setItem('currentGame', JSON.stringify(currentGame));
+                    localStorage.setItem('currentPlayer', JSON.stringify(currentPlayer));
+                    localStorage.setItem('soloMode', 'true');
+
+                    // Avvia la partita via WebSocket
+                    joinChatLobby(currentGame.id);
+                    setTimeout(() => {
+                        if (socket && chatConnected) {
+                            socket.emit('game-started', currentGame.id);
+                        }
+                        window.location.href = '/frontend/pages/blackjack.html';
+                    }, 600);
+
+                } catch (error) {
+                    alert('Errore: ' + error.message);
+                } finally {
+                    showLoading('soloBtn', false);
+                }
+            }
+            
+            async function createGame() {
+                if (!validatePlayerName()) return;
+
+                const apiKey = getApiKey();
+                if (!apiKey) {
+                    alert('Devi essere loggato per creare una partita.');
+                    return;
+                }
+
+                const gameData = {
+                    name: document.getElementById('tableName').value || 'Tavolo principale',
+                    maxPlayers: parseInt(document.getElementById('maxPlayers').value)
+                };
+
+                showLoading('createBtn', true);
+
+                try {
+                    // Genera un codice casuale a 6 cifre per la partita
+                    const gameCode = Math.random().toString(36).substring(2, 8).toUpperCase();
+                    
+                    const response = await fetch('/games', {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/json',
+                            'x-api-key': apiKey
+                        },
+                        body: JSON.stringify({ 
+                            name: gameData.name,
+                            playerName: currentPlayer.name,
+                            code: gameCode
+                        })
+                    });
+                    const data = await response.json();
+
+                    if (!response.ok) {
+                        throw new Error(data.error || 'Errore creazione partita');
+                    }
+
+                    const createdGame = data.game;
+
+                    currentGame = {
+                        id: createdGame.id,
+                        code: gameCode,
+                        name: createdGame.name,
+                        players: createdGame.players || [],
+                        maxPlayers: gameData.maxPlayers,
+                        minBet: gameData.minBet,
+                        status: createdGame.status || 'active'
+                    };
+
+                    currentPlayer.isHost = true;
+                    availableGamesByCode[gameCode] = createdGame.id;
+
+                    stopAvailableGamesPolling(); // Ferma polling quando si crea una partita
+                    showGameCreated();
+                    
+                    // Unisciti alla chat della lobby
+                    joinChatLobby(currentGame.id);
+                    showChatSidebar();
+                    clearChatMessages();
+                    addSystemMessage(`🎮 Hai creato la partita: ${gameCode}`);
+                    
+                    updatePlayersList();
+
+                    await loadAvailableGames();
+                } catch (error) {
+                    alert('Errore nella creazione della partita: ' + error.message);
+                } finally {
+                    showLoading('createBtn', false);
+                }
+            }
+
+            async function joinGame() {
+                if (!validatePlayerName()) return;
+
+                const gameCode = document.getElementById('gameCode').value.trim().toUpperCase();
+                if (!gameCode || gameCode.length !== 6) {
+                    document.getElementById('gameCodeError').style.display = 'block';
+                    document.getElementById('gameCode').classList.add('is-invalid');
+                    return;
+                }
+
+                const apiKey = getApiKey();
+                if (!apiKey) {
+                    alert('Devi essere loggato per entrare in una partita.');
+                    return;
+                }
+
+                showLoading('joinBtn', true);
+
+                try {
+                    // Prima trova il game ID dal codice
+                    const codeResponse = await fetch(`/games/code/${gameCode}`);
+                    if (!codeResponse.ok) {
+                        const errorData = await codeResponse.json().catch(() => ({}));
+                        throw new Error(errorData.error || 'Codice partita non trovato');
+                    }
+                    const codeData = await codeResponse.json();
+                    const targetGameId = codeData.game.id;
+
+                    const response = await fetch(`/games/${targetGameId}/players`, {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/json',
+                            'x-api-key': apiKey
+                        },
+                        body: JSON.stringify({ name: currentPlayer.name })
+                    });
+                    const data = await response.json();
+
+                    if (!response.ok) {
+                        throw new Error(data.error || 'Errore join partita');
+                    }
+
+                    // Use the full game object returned by the backend
+                    const joinedGame = data.game;
+                    currentGame = {
+                        id: joinedGame.id,
+                        code: gameCode,
+                        name: joinedGame.name || 'Partita ' + gameCode,
+                        players: joinedGame.players || [],
+                        maxPlayers: joinedGame.maxPlayers || 6,
+                        minBet: joinedGame.minBet || 10,
+                        status: joinedGame.status || 'active'
+                    };
+
+                    currentPlayer.isHost = false;
+                    stopAvailableGamesPolling(); // Ferma polling quando si joina una partita
+                    showGameCreated();
+                    
+                    // Unisciti alla chat della lobby
+                    joinChatLobby(currentGame.id);
+                    showChatSidebar();
+                    clearChatMessages();
+                    addSystemMessage(`🎮 Ti sei unito alla partita: ${gameCode}`);
+                    
+                    updatePlayersList();
+                    await loadAvailableGames();
+                } catch (error) {
+                    alert('Errore nel join: ' + error.message);
+                } finally {
+                    showLoading('joinBtn', false);
+                }
+            }
+            
+            function showGameCreated() {
+                document.querySelector('.tab-buttons').style.display = 'none';
+                document.getElementById('createTab').style.display = 'none';
+                document.getElementById('joinTab').style.display = 'none';
+                document.getElementById('gameCreatedSection').style.display = 'block';
+                
+                document.getElementById('displayGameCode').textContent = currentGame.code;
+                
+                // Abilita pulsante inizia solo se è l'host
+                if (currentPlayer.isHost) {
+                    document.getElementById('startGameBtn').disabled = false;
+                }
+                
+                // Avvia polling per aggiornare i giocatori in tempo reale
+                startGamePlayersPolling();
+            }
+            
+            function showChatSidebar() {
+                const chatSidebar = document.querySelector('.chat-sidebar');
+                if (chatSidebar) {
+                    chatSidebar.classList.add('visible');
+                }
+            }
+            
+            function hideChatSidebar() {
+                const chatSidebar = document.querySelector('.chat-sidebar');
+                if (chatSidebar) {
+                    chatSidebar.classList.remove('visible');
+                }
+            }
+            
+            function updatePlayersList() {
+                const playersList = document.getElementById('playersList');
+                
+                if (!currentGame.players || currentGame.players.length === 0) {
+                    playersList.innerHTML = '<div class="empty-state"><i class="fas fa-users me-1"></i> Nessun giocatore</div>';
+                    return;
+                }
+                
+                playersList.innerHTML = '';
+                
+                currentGame.players.forEach(player => {
+                    const playerDiv = document.createElement('div');
+                    playerDiv.className = 'player-item';
+                    
+                    // Avatar con iniziale
+                    const avatar = document.createElement('div');
+                    avatar.className = 'player-avatar';
+                    avatar.textContent = player.name.charAt(0).toUpperCase();
+                    
+                    // Nome e badge host
+                    const nameContainer = document.createElement('div');
+                    nameContainer.style.display = 'flex';
+                    nameContainer.style.alignItems = 'center';
+                    nameContainer.style.gap = '8px';
+                    
+                    const nameSpan = document.createElement('span');
+                    nameSpan.style.fontWeight = '500';
+                    nameSpan.style.color = 'var(--ivory)';
+                    nameSpan.style.fontFamily = "'Lato', sans-serif";
+                    nameSpan.textContent = player.name;
+                    
+                    nameContainer.appendChild(nameSpan);
+                    
+                    if (player.isHost) {
+                        const hostBadge = document.createElement('span');
+                        hostBadge.className = 'player-host';
+                        hostBadge.textContent = 'HOST';
+                        nameContainer.appendChild(hostBadge);
+                    }
+                    
+                    // Indicatore "tu" se è il giocatore corrente
+                    if (player.id === currentPlayer.id) {
+                        const youBadge = document.createElement('span');
+                        youBadge.className = 'player-status';
+                        youBadge.innerHTML = '<i class="fas fa-check-circle"></i> tu';
+                        nameContainer.appendChild(youBadge);
+                    }
+                    
+                    playerDiv.appendChild(avatar);
+                    playerDiv.appendChild(nameContainer);
+                    playersList.appendChild(playerDiv);
+                });
+                
+                // Aggiorna contatore giocatori
+                const statusText = `${currentGame.players.length}/${currentGame.maxPlayers} giocatori`;
+                document.getElementById('gameStatus').innerHTML = `<i class="fas fa-users me-1"></i> ${statusText}`;
+            }
+            
+            function startGame() {
+                if (currentGame.players.length < 2) {
+                    alert('Servono almeno 2 giocatori per iniziare! Oppure usa "Gioca da solo".');
+                    return;
+                }
+
+                localStorage.setItem('currentGame', JSON.stringify(currentGame));
+                localStorage.setItem('currentPlayer', JSON.stringify(currentPlayer));
+
+                if (socket && chatConnected) {
+                    socket.emit('game-started', currentGame.id);
+                    addSystemMessage('🎮 La partita è iniziata! Apertura del blackjack...');
+                }
+
+                setTimeout(() => {
+                    window.location.href = '/frontend/pages/blackjack.html';
+                }, 500);
+            }
+
+            function cancelGame() {
+                if (!currentGame.id) {
+                    location.reload();
+                    return;
+                }
+
+                if (!confirm('Vuoi davvero cancellare la partita? Tutti i giocatori verranno rimandati alla lobby.')) {
+                    return;
+                }
+
+                if (socket && chatConnected) {
+                    socket.emit('leave-lobby', currentGame.id, (response) => {
+                        if (response.status === 'deleted' || response.status === 'player-removed') {
+                            stopGamePlayersPolling();
+                            resetLobbyState();
+                            addSystemMessage('🗑️ Partita cancellata con successo.');
+                        } else {
+                            alert('Errore nella cancellazione della partita');
+                        }
+                    });
+                } else {
+                    location.reload();
+                }
+            }
+
+            function resetLobbyState() {
+                currentGame = {
+                    code: null,
+                    id: null,
+                    name: '',
+                    players: [],
+                    maxPlayers: 4,
+                    minBet: 10,
+                    status: 'waiting'
+                };
+
+                currentPlayer.isHost = false;
+                document.querySelector('.tab-buttons').style.display = 'flex';
+                document.getElementById('createTab').style.display = 'block';
+                document.getElementById('joinTab').style.display = 'block';
+                document.getElementById('gameCreatedSection').style.display = 'none';
+                hideChatSidebar();
+                updatePlayersList();
+                loadAvailableGames();
+            }
+            
+            async function leaveGame() {
+                if (confirm('Vuoi davvero lasciare la partita?')) {
+                    try {
+                        // Usa il WebSocket per uscire così gli altri ricevono la notifica in tempo reale
+                        if (socket && chatConnected) {
+                            socket.emit('leave-lobby', currentGame.id, (response) => {
+                                console.log('Leave response:', response);
+                            });
+                        }
+
+                        // Ferma il polling
+                        stopGamePlayersPolling();
+
+                        // Resetta lo stato
+                        currentGame = {
+                            code: null,
+                            id: null,
+                            name: '',
+                            players: [],
+                            maxPlayers: 4,
+                            minBet: 10,
+                            status: 'waiting'
+                        };
+
+                        // Torna alla schermata principale
+                        document.querySelector('.tab-buttons').style.display = 'flex';
+                        document.getElementById('createTab').style.display = 'block';
+                        document.getElementById('joinTab').style.display = 'block';
+                        document.getElementById('gameCreatedSection').style.display = 'none';
+                        hideChatSidebar();
+
+                    } catch (error) {
+                        console.error('Errore:', error);
+                        alert('Errore di connessione nel lasciare la partita');
+                    }
+                }
+            }
+            
+            function generateGameCode() {
+                const chars = 'ABCDEFGHJKLMNPQRSTUVWXYZ0123456789';
+                let code = '';
+                for (let i = 0; i < 6; i++) {
+                    code += chars.charAt(Math.floor(Math.random() * chars.length));
+                }
+                return code;
+            }
+            
+            function copyGameCode() {
+                navigator.clipboard.writeText(currentGame.code).then(() => {
+                    // Feedback visivo
+                    const copyBtn = document.querySelector('.copy-btn');
+                    const originalText = copyBtn.innerHTML;
+                    copyBtn.innerHTML = '<i class="fas fa-check me-1"></i> Copiato!';
+                    setTimeout(() => {
+                        copyBtn.innerHTML = originalText;
+                    }, 2000);
+                });
+            }
+            
+            function validatePlayerName() {
+                const name = currentPlayer.name || document.getElementById('playerNameInput').value.trim();
+                if (!name || name.length < 2) {
+                    document.getElementById('playerNameError').style.display = 'block';
+                    document.getElementById('playerNameInput').classList.add('is-invalid');
+                    return false;
+                }
+                currentPlayer.name = name;
+                return true;
+            }
+            
+            function showLoading(buttonId, show) {
+                const btn = document.getElementById(buttonId);
+                if (show) {
+                    btn.disabled = true;
+                    btn.innerHTML = '<span class="loading-spinner"></span> Attendere...';
+                } else {
+                    btn.disabled = false;
+                    btn.innerHTML = buttonId === 'createBtn' ? 
+                        '<i class="fas fa-dice me-2"></i> Apri il tavolo' : 
+                        '<i class="fas fa-sign-in-alt me-2"></i> Siediti al tavolo';
+                }
+            }
+            
+            async function checkServerConnection() {
+                const statusEl = document.getElementById('serverStatus');
+                try {
+                    // QUI ANDRÀ LA VERIFICA REALE DEL SERVER
+                    // const response = await fetch('/api/ping');
+                    
+                    // Per ora simuliamo una verifica
+                    await new Promise(resolve => setTimeout(resolve, 1000));
+                    
+                    statusEl.innerHTML = '<i class="fas fa-check-circle me-1"></i> Connesso al server';
+                    statusEl.className = 'server-status text-success';
+                } catch (error) {
+                    statusEl.innerHTML = '<i class="fas fa-exclamation-triangle me-1"></i> Modalità sviluppo';
+                    statusEl.className = 'server-status text-warning';
+                }
+            }
+            
+            // Funzione per il polling dello stato della partita (da implementare con il backend)
+            function startPollingGameStatus() {
+                setInterval(async () => {
+                    if (currentGame.code) {
+                        try {
+                            // const response = await fetch(`/api/games/${currentGame.code}/status`);
+                            // const data = await response.json();
+                            // currentGame.players = data.players;
+                            // updatePlayersList();
+                        } catch (error) {
+                            console.log('Polling error:', error);
+                        }
+                    }
+                }, 3000);
+            }
+        </script>
+    </body>
 </html>

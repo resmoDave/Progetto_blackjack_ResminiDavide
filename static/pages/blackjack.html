@@ -1,0 +1,1556 @@
+<!DOCTYPE html>
+<html lang="it">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Blackjack - GameApi</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;700&family=Cinzel:wght@400;600;700&family=Lato:wght@300;400;700&display=swap" rel="stylesheet">
+
+    <style>
+        :root {
+            --felt: #0b2718;
+            --felt-mid: #163520;
+            --felt-light: #1e4a2d;
+            --gold: #c9a84c;
+            --gold-bright: #f0c96e;
+            --gold-dark: #8a6c28;
+            --ivory: #f5f0e8;
+            --ivory-dim: #d9d0bc;
+            --red-card: #c0392b;
+        }
+
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+
+        ::-webkit-scrollbar { width: 5px; height: 5px; }
+        ::-webkit-scrollbar-track { background: rgba(0,0,0,0.2); }
+        ::-webkit-scrollbar-thumb { background: var(--gold-dark); border-radius: 3px; }
+
+        body {
+            background-color: var(--felt);
+            background-image:
+                radial-gradient(ellipse at 15% 10%, rgba(30,74,45,0.55) 0%, transparent 55%),
+                radial-gradient(ellipse at 85% 90%, rgba(30,74,45,0.45) 0%, transparent 55%),
+                url("data:image/svg+xml,%3Csvg width='60' height='60' viewBox='0 0 60 60' xmlns='http://www.w3.org/2000/svg'%3E%3Cg fill='none'%3E%3Cg fill='%23ffffff' fill-opacity='0.012'%3E%3Cpath d='M36 34v-4h-2v4h-4v2h4v4h2v-4h4v-2h-4zm0-30V0h-2v4h-4v2h4v4h2V6h4V4h-4zM6 34v-4H4v4H0v2h4v4h2v-4h4v-2H6zM6 4V0H4v4H0v2h4v4h2V6h4V4H6z'/%3E%3C/g%3E%3C/g%3E%3C/svg%3E");
+            min-height: 100vh;
+            font-family: 'Lato', sans-serif;
+            color: var(--ivory);
+            overflow: hidden;
+        }
+
+        .game-wrapper {
+            display: flex;
+            height: 100vh;
+            gap: 10px;
+            padding: 10px;
+        }
+
+        .game-main {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            background: linear-gradient(180deg, rgba(11,39,24,0.97) 0%, rgba(8,25,15,0.99) 100%);
+            border: 1px solid rgba(201,168,76,0.2);
+            border-radius: 4px;
+            padding: 16px 20px;
+            box-shadow: 0 0 0 1px rgba(201,168,76,0.07), 0 20px 60px rgba(0,0,0,0.6), inset 0 1px 0 rgba(240,201,110,0.07);
+            overflow: auto;
+            position: relative;
+        }
+
+        /* ── HEADER ── */
+        .game-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 12px;
+            padding-bottom: 12px;
+            border-bottom: 1px solid rgba(201,168,76,0.18);
+            flex-wrap: wrap;
+            gap: 8px;
+        }
+
+        .game-header h1 {
+            font-family: 'Cinzel', serif;
+            font-size: 1.55rem;
+            font-weight: 700;
+            letter-spacing: 4px;
+            color: var(--gold-bright);
+            text-shadow: 0 0 20px rgba(240,201,110,0.35);
+        }
+
+        .game-header h1 i { font-size: 0.9rem; color: var(--gold-dark); opacity: 0.65; margin: 0 8px; }
+
+        .game-info { display: flex; gap: 7px; align-items: center; flex-wrap: wrap; }
+
+        .info-item {
+            background: rgba(0,0,0,0.3);
+            border: 1px solid rgba(201,168,76,0.16);
+            padding: 5px 11px;
+            border-radius: 3px;
+            font-size: 0.79rem;
+            color: var(--ivory-dim);
+        }
+
+        .info-item strong { color: var(--gold); font-weight: 700; }
+
+        .back-btn {
+            background: transparent;
+            border: 1px solid rgba(201,168,76,0.28);
+            color: var(--gold);
+            padding: 5px 13px;
+            border-radius: 3px;
+            cursor: pointer;
+            font-family: 'Lato', sans-serif;
+            font-weight: 700;
+            font-size: 0.72rem;
+            letter-spacing: 1.5px;
+            text-transform: uppercase;
+            transition: all 0.2s;
+        }
+
+        .back-btn:hover { background: rgba(201,168,76,0.08); border-color: var(--gold); }
+
+        .current-player-badge {
+            background: linear-gradient(135deg, #1e6b3d, #27ae60);
+            padding: 4px 10px;
+            border-radius: 3px;
+            font-family: 'Lato', sans-serif;
+            font-weight: 700;
+            font-size: 0.75rem;
+            letter-spacing: 1px;
+            color: white;
+            animation: pulse 1.5s infinite;
+        }
+
+        .current-player-badge.timeout { background: linear-gradient(135deg, #7b1515, #c0392b); }
+
+        /* ── BETTING ── */
+        .betting-section {
+            background: rgba(0,0,0,0.22);
+            border: 1px solid rgba(201,168,76,0.18);
+            padding: 12px 16px;
+            border-radius: 4px;
+            margin-bottom: 12px;
+        }
+
+        .betting-section h4 {
+            font-family: 'Lato', sans-serif;
+            font-weight: 700;
+            font-size: 0.67rem;
+            letter-spacing: 2.5px;
+            text-transform: uppercase;
+            color: var(--gold);
+            margin-bottom: 9px;
+        }
+
+        .bet-input-group { display: flex; gap: 7px; align-items: center; }
+
+        .bet-input {
+            flex: 1;
+            padding: 8px 12px;
+            border: 1px solid rgba(201,168,76,0.22);
+            border-radius: 3px;
+            background: rgba(0,0,0,0.35);
+            color: var(--ivory);
+            font-family: 'Lato', sans-serif;
+            font-size: 0.93rem;
+            transition: border-color 0.2s;
+        }
+
+        .bet-input::placeholder { color: rgba(245,240,232,0.2); }
+        .bet-input:focus { outline: none; border-color: var(--gold); }
+
+        .btn-bet {
+            padding: 8px 16px;
+            border: none;
+            border-radius: 3px;
+            font-family: 'Cinzel', serif;
+            font-size: 0.8rem;
+            font-weight: 600;
+            letter-spacing: 1px;
+            cursor: pointer;
+            transition: all 0.2s;
+            background: linear-gradient(135deg, #b8892a, #d4a843, #c9a84c, #a07020);
+            color: #1a0e02;
+            box-shadow: 0 3px 8px rgba(0,0,0,0.3);
+        }
+
+        .btn-bet:hover:not(:disabled) { filter: brightness(1.1); transform: translateY(-1px); }
+        .btn-bet:disabled { opacity: 0.4; cursor: not-allowed; }
+
+        /* ── STATUS ── */
+        .game-status {
+            text-align: center;
+            font-family: 'Cinzel', serif;
+            font-size: 1rem;
+            font-weight: 600;
+            letter-spacing: 2px;
+            padding: 10px;
+            border-radius: 4px;
+            margin: 6px 0;
+            border: 1px solid rgba(255,255,255,0.08);
+            background: rgba(255,255,255,0.03);
+            color: var(--ivory-dim);
+        }
+
+        .game-status.win  { background: rgba(46,204,113,0.1); color: #2ecc71; border-color: rgba(46,204,113,0.28); }
+        .game-status.lose { background: rgba(192,57,43,0.1); color: #e74c3c; border-color: rgba(192,57,43,0.28); }
+        .game-status.push { background: rgba(201,168,76,0.09); color: var(--gold-bright); border-color: rgba(201,168,76,0.28); }
+
+        /* ── TABLE ── */
+        .table-section {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            justify-content: space-around;
+            gap: 8px;
+            margin: 8px 0;
+        }
+
+        .dealer-section, .player-section {
+            background: rgba(0,0,0,0.18);
+            border: 1px solid rgba(201,168,76,0.11);
+            padding: 10px 14px;
+            border-radius: 4px;
+        }
+
+        .dealer-section h5, .player-section h5 {
+            font-family: 'Lato', sans-serif;
+            font-weight: 700;
+            font-size: 0.64rem;
+            letter-spacing: 2.5px;
+            text-transform: uppercase;
+            color: var(--gold);
+            margin-bottom: 8px;
+        }
+
+        /* ── CARDS ── */
+        .cards-container {
+            display: flex;
+            gap: 7px;
+            margin-bottom: 6px;
+            min-height: 85px;
+            flex-wrap: wrap;
+            align-items: flex-start;
+        }
+
+        .card {
+            width: 64px;
+            height: 96px;
+            background: var(--ivory);
+            border-radius: 6px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.5), inset 0 1px 0 rgba(255,255,255,0.8);
+            font-weight: bold;
+            transition: transform 0.25s;
+            animation: popIn 0.3s ease-out;
+            border: 1px solid rgba(0,0,0,0.1);
+        }
+
+        .card:hover { transform: translateY(-6px) rotate(1deg); }
+
+        .card.hearts, .card.diamonds { color: var(--red-card); }
+        .card.clubs, .card.spades    { color: #1a1a1a; }
+
+        .card-value { font-size: 1.25rem; font-weight: 900; line-height: 1; }
+        .card-suit  { font-size: 0.95rem; margin-top: 2px; }
+
+        .card.hidden {
+            background: linear-gradient(145deg, #1a3a2a 0%, #0d2015 100%);
+            border: 1px solid rgba(201,168,76,0.28);
+        }
+
+        .card.hidden i { color: rgba(201,168,76,0.45); font-size: 1.3rem; }
+
+        .score-display {
+            font-family: 'Lato', sans-serif;
+            font-size: 0.82rem;
+            font-weight: 700;
+            color: rgba(245,240,232,0.42);
+            letter-spacing: 1px;
+            margin-top: 4px;
+        }
+
+        .score-display.bust     { color: #e74c3c; }
+        .score-display.blackjack { color: #2ecc71; }
+
+        /* ── OTHER PLAYERS ── */
+        .players-cards-section {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(160px, 1fr));
+            gap: 8px;
+            max-height: 190px;
+            overflow-y: auto;
+        }
+
+        .other-player-box {
+            background: rgba(0,0,0,0.22);
+            padding: 9px 11px;
+            border-radius: 4px;
+            border: 1px solid rgba(201,168,76,0.1);
+            text-align: center;
+            transition: all 0.25s;
+        }
+
+        .other-player-box:hover {
+            background: rgba(201,168,76,0.05);
+            border-color: rgba(201,168,76,0.28);
+            transform: translateY(-2px);
+        }
+
+        .player-name {
+            font-family: 'Cinzel', serif;
+            font-weight: 600;
+            color: var(--gold);
+            margin-bottom: 5px;
+            font-size: 0.8rem;
+            letter-spacing: 0.8px;
+        }
+
+        .player-cards { display: flex; gap: 4px; margin-bottom: 5px; justify-content: center; flex-wrap: wrap; }
+
+        .player-card {
+            background: var(--ivory);
+            color: #1a1a1a;
+            padding: 3px 7px;
+            border-radius: 3px;
+            font-size: 0.78rem;
+            font-weight: 900;
+            min-width: 28px;
+            text-align: center;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.4);
+        }
+
+        .player-score { font-size: 0.78rem; font-weight: 700; margin-bottom: 4px; font-family: 'Lato', sans-serif; }
+
+        .player-status {
+            font-size: 0.65rem;
+            padding: 2px 7px;
+            border-radius: 2px;
+            text-transform: uppercase;
+            font-weight: 700;
+            letter-spacing: 1px;
+            font-family: 'Lato', sans-serif;
+        }
+
+        .player-status.playing { background: rgba(201,168,76,0.13); color: var(--gold); border: 1px solid rgba(201,168,76,0.28); }
+        .player-status.stand   { background: rgba(46,204,113,0.1);  color: #2ecc71; border: 1px solid rgba(46,204,113,0.22); }
+        .player-status.bust    { background: rgba(192,57,43,0.1);   color: #e74c3c; border: 1px solid rgba(192,57,43,0.22); }
+        .player-status.win     { background: rgba(46,204,113,0.1);  color: #2ecc71; border: 1px solid rgba(46,204,113,0.22); }
+        .player-status.lose    { background: rgba(192,57,43,0.1);   color: #e74c3c; border: 1px solid rgba(192,57,43,0.22); }
+        .player-status.push    { background: rgba(155,89,182,0.1);  color: #bb8fce; border: 1px solid rgba(155,89,182,0.22); }
+
+        .player-result { font-size: 0.72rem; color: var(--gold); margin-top: 3px; font-style: italic; font-family: 'Lato', sans-serif; }
+
+        /* ── ACTIONS ── */
+        .actions-section { display: flex; gap: 8px; justify-content: center; margin: 8px 0; flex-wrap: wrap; }
+
+        .btn-action {
+            padding: 10px 20px;
+            border: none;
+            border-radius: 3px;
+            font-family: 'Cinzel', serif;
+            font-size: 0.8rem;
+            font-weight: 600;
+            letter-spacing: 1.5px;
+            cursor: pointer;
+            transition: all 0.2s;
+            min-width: 95px;
+            box-shadow: 0 3px 10px rgba(0,0,0,0.4);
+        }
+
+        .btn-action:hover:not(:disabled) { transform: translateY(-2px); filter: brightness(1.1); box-shadow: 0 6px 16px rgba(0,0,0,0.5); }
+        .btn-action:active:not(:disabled) { transform: translateY(0); }
+        .btn-action:disabled { opacity: 0.3; cursor: not-allowed; }
+
+        .btn-hit    { background: linear-gradient(135deg, #1e6b3d, #27ae60); color: #fff; }
+        .btn-stand  { background: linear-gradient(135deg, #7b1515, #c0392b); color: #fff; }
+        .btn-double { background: linear-gradient(135deg, #152f6e, #2471a3); color: #fff; }
+        .btn-split  { background: linear-gradient(135deg, #3d1060, #7d3c98); color: #fff; }
+
+        #nextRoundBtn {
+            background: linear-gradient(135deg, #b8892a, #d4a843);
+            color: #1a0e02;
+            align-self: center;
+            margin-top: 6px;
+            min-width: 170px;
+        }
+
+        /* ── TIMER ── */
+        .timer-display {
+            position: absolute;
+            top: 14px;
+            right: 14px;
+            width: 58px;
+            height: 58px;
+            border-radius: 50%;
+            background: conic-gradient(var(--gold) var(--progress), rgba(255,255,255,0.05) 0);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            box-shadow: 0 0 16px rgba(201,168,76,0.35);
+        }
+
+        .timer-display::before {
+            content: '';
+            position: absolute;
+            inset: 5px;
+            border-radius: 50%;
+            background: #0b2718;
+        }
+
+        .timer-display.warning { background: conic-gradient(#e67e22 var(--progress), rgba(255,255,255,0.05) 0); }
+        .timer-display.danger  { background: conic-gradient(#e74c3c var(--progress), rgba(255,255,255,0.05) 0); }
+
+        .timer-value {
+            font-family: 'Cinzel', serif;
+            font-size: 1.3rem;
+            font-weight: 700;
+            color: var(--gold-bright);
+            position: relative;
+            z-index: 1;
+        }
+
+        /* ── CHAT SIDEBAR ── */
+        .chat-sidebar {
+            width: 270px;
+            flex-shrink: 0;
+            background: #080f0b;
+            border: 1px solid rgba(201,168,76,0.18);
+            border-radius: 4px;
+            display: flex;
+            flex-direction: column;
+            box-shadow: 0 0 0 1px rgba(201,168,76,0.06), 0 20px 50px rgba(0,0,0,0.5);
+            overflow: hidden;
+        }
+
+        .chat-header {
+            background: linear-gradient(135deg, #1a0a00, #2c1500);
+            border-bottom: 1px solid rgba(201,168,76,0.18);
+            color: var(--gold);
+            padding: 11px 14px;
+            font-family: 'Cinzel', serif;
+            font-size: 0.75rem;
+            font-weight: 600;
+            letter-spacing: 3px;
+            text-transform: uppercase;
+            text-align: center;
+        }
+
+        .chat-messages {
+            flex: 1;
+            overflow-y: auto;
+            padding: 7px;
+            display: flex;
+            flex-direction: column;
+            gap: 4px;
+            background: #080f0b;
+        }
+
+        .chat-message {
+            background: rgba(255,255,255,0.03);
+            border: 1px solid rgba(255,255,255,0.045);
+            padding: 6px 8px;
+            border-radius: 3px;
+            font-size: 0.79rem;
+            font-family: 'Lato', sans-serif;
+            animation: slideIn 0.25s ease-out;
+        }
+
+        .chat-message.system {
+            background: rgba(201,168,76,0.05);
+            border-color: rgba(201,168,76,0.11);
+            color: rgba(201,168,76,0.6);
+            font-size: 0.72rem;
+            text-align: center;
+            font-style: italic;
+        }
+
+        .chat-message-user {
+            font-weight: 700;
+            color: var(--gold);
+            font-size: 0.64rem;
+            letter-spacing: 1px;
+            text-transform: uppercase;
+            margin-bottom: 2px;
+        }
+
+        .chat-message div:last-child { color: var(--ivory-dim); line-height: 1.35; }
+
+        /* ── PLAYERS LIST ── */
+        .players-list {
+            background: rgba(0,0,0,0.22);
+            border-top: 1px solid rgba(201,168,76,0.13);
+            padding: 9px 11px;
+        }
+
+        .players-list h5 {
+            font-family: 'Lato', sans-serif;
+            font-weight: 700;
+            font-size: 0.62rem;
+            letter-spacing: 2px;
+            text-transform: uppercase;
+            color: var(--gold);
+            margin-bottom: 7px;
+        }
+
+        .player-item {
+            display: flex;
+            justify-content: space-between;
+            padding: 5px 7px;
+            background: rgba(255,255,255,0.025);
+            border: 1px solid rgba(255,255,255,0.045);
+            border-radius: 3px;
+            margin-bottom: 3px;
+            font-size: 0.8rem;
+            font-family: 'Lato', sans-serif;
+        }
+
+        .player-item .player-name  { color: var(--ivory); font-weight: 600; }
+        .player-item .player-score { color: var(--gold); font-weight: 700; }
+
+        /* ── CHAT INPUT ── */
+        .chat-input-area {
+            padding: 7px;
+            border-top: 1px solid rgba(201,168,76,0.1);
+            display: flex;
+            gap: 5px;
+            background: rgba(0,0,0,0.28);
+        }
+
+        .chat-input {
+            flex: 1;
+            background: rgba(0,0,0,0.4);
+            border: 1px solid rgba(201,168,76,0.18);
+            border-radius: 2px;
+            padding: 6px 9px;
+            font-size: 0.8rem;
+            color: var(--ivory);
+            font-family: 'Lato', sans-serif;
+            transition: border-color 0.2s;
+        }
+
+        .chat-input::placeholder { color: rgba(245,240,232,0.17); }
+        .chat-input:focus { outline: none; border-color: rgba(201,168,76,0.42); }
+
+        .chat-send-btn {
+            background: linear-gradient(135deg, #1e6b3d, #27ae60);
+            color: white;
+            border: none;
+            border-radius: 2px;
+            padding: 6px 11px;
+            cursor: pointer;
+            font-size: 0.8rem;
+            transition: all 0.2s;
+        }
+
+        .chat-send-btn:hover { filter: brightness(1.15); }
+
+        /* ── RESPONSIVE ── */
+        @media (max-width: 900px) {
+            .chat-sidebar { width: 220px; }
+            .card { width: 55px; height: 84px; }
+            .card-value { font-size: 1.05rem; }
+        }
+
+        @media (max-width: 680px) {
+            .game-wrapper { gap: 5px; padding: 5px; }
+            .chat-sidebar { width: 180px; }
+            .game-header h1 { font-size: 1.15rem; }
+            .btn-action { padding: 8px 10px; font-size: 0.72rem; min-width: 70px; }
+            .card { width: 48px; height: 74px; }
+            .card-value { font-size: 0.9rem; }
+        }
+
+        /* ── MOBILE ── */
+        @media (max-width: 540px) {
+            /* Layout verticale: tavolo sopra, chat sotto */
+            .game-wrapper {
+                flex-direction: column;
+                padding: 6px;
+                gap: 6px;
+                height: auto;
+                min-height: 100dvh;
+            }
+
+            .game-main {
+                width: 100%;
+                overflow-y: auto;
+                padding-bottom: 8px;
+            }
+
+            /* Chat in fondo, orizzontale */
+            .chat-sidebar {
+                width: 100%;
+                height: 200px;
+                border-radius: 12px;
+                flex-shrink: 0;
+            }
+            .chat-messages { font-size: 0.75rem; }
+            .chat-input-area input { font-size: 0.82rem; }
+
+            /* Header */
+            .game-header h1 { font-size: 1rem; letter-spacing: 1px; }
+            .game-info { gap: 8px; flex-wrap: wrap; justify-content: center; }
+            .info-badge { padding: 4px 10px; font-size: 0.72rem; }
+
+            /* Carte più piccole */
+            .card { width: 44px; height: 68px; border-radius: 6px; }
+            .card-value { font-size: 0.82rem; }
+            .card-suit { font-size: 0.9rem; }
+            .cards-container { gap: 4px; }
+
+            /* Sezioni giocatori */
+            .dealer-section,
+            .player-section { padding: 8px 10px; margin: 4px 0; }
+            .section-label { font-size: 0.7rem; letter-spacing: 1px; }
+            .score-display { font-size: 0.8rem; }
+
+            /* Pulsanti azione — griglia 2x2 per tocco facile */
+            .action-buttons {
+                display: grid;
+                grid-template-columns: 1fr 1fr;
+                gap: 8px;
+                padding: 8px;
+            }
+            .btn-action {
+                padding: 14px 8px;
+                font-size: 0.8rem;
+                min-width: unset;
+                width: 100%;
+                border-radius: 10px;
+                justify-content: center;
+            }
+
+            /* Betting */
+            .bet-input { font-size: 0.9rem; padding: 10px 12px; }
+            .bet-controls { gap: 6px; flex-wrap: wrap; }
+            .chip-btn { width: 44px; height: 44px; font-size: 0.72rem; }
+
+            /* Timer */
+            .timer-display { font-size: 0.8rem; padding: 4px 12px; }
+            .timer-value { font-size: 1.2rem; }
+
+            /* Status */
+            #gameStatus { font-size: 0.9rem; padding: 10px 14px; }
+
+            /* Altri giocatori */
+            .other-players-grid { grid-template-columns: 1fr 1fr; gap: 6px; }
+            .other-player-card { padding: 8px; }
+        }
+
+        @media (max-width: 360px) {
+            .card { width: 38px; height: 58px; }
+            .card-value { font-size: 0.72rem; }
+            .btn-action { padding: 12px 6px; font-size: 0.72rem; }
+            .game-header h1 { font-size: 0.88rem; }
+        }
+
+        /* ── MOBILE CHAT TOGGLE ── */
+        @media (max-width: 540px) {
+            /* Pulsante flottante per aprire/chiudere chat */
+            .chat-toggle-btn {
+                display: flex;
+                align-items: center;
+                justify-content: center;
+                position: fixed;
+                bottom: 20px;
+                right: 16px;
+                width: 52px;
+                height: 52px;
+                background: linear-gradient(135deg, #1e6b3d, #27ae60);
+                border: 2px solid rgba(201,168,76,0.4);
+                border-radius: 50%;
+                color: white;
+                font-size: 1.2rem;
+                box-shadow: 0 4px 20px rgba(0,0,0,0.5);
+                z-index: 1000;
+                cursor: pointer;
+                transition: transform 0.2s;
+            }
+            .chat-toggle-btn:active { transform: scale(0.92); }
+
+            /* Badge notifica messaggi non letti */
+            .chat-badge {
+                position: absolute;
+                top: -4px;
+                right: -4px;
+                background: #e74c3c;
+                color: white;
+                border-radius: 50%;
+                width: 20px;
+                height: 20px;
+                font-size: 0.65rem;
+                font-weight: 700;
+                display: flex;
+                align-items: center;
+                justify-content: center;
+                display: none;
+            }
+            .chat-badge.visible { display: flex; }
+
+            /* Chat come overlay da basso verso alto */
+            .chat-sidebar {
+                display: none;
+                position: fixed;
+                bottom: 0;
+                left: 0;
+                right: 0;
+                width: 100% !important;
+                height: 65dvh;
+                border-radius: 18px 18px 0 0;
+                z-index: 999;
+                box-shadow: 0 -8px 40px rgba(0,0,0,0.7);
+                animation: slideUp 0.3s ease-out;
+            }
+            .chat-sidebar.mobile-open {
+                display: flex;
+            }
+
+            /* Overlay scuro dietro la chat */
+            .chat-overlay {
+                display: none;
+                position: fixed;
+                inset: 0;
+                background: rgba(0,0,0,0.55);
+                z-index: 998;
+            }
+            .chat-overlay.visible { display: block; }
+
+            /* Handle in cima alla chat per chiuderla */
+            .chat-handle {
+                display: flex;
+                justify-content: center;
+                align-items: center;
+                padding: 8px 0 4px;
+                cursor: pointer;
+                background: linear-gradient(135deg, #1a0a00, #2c1500);
+                border-radius: 18px 18px 0 0;
+                flex-shrink: 0;
+            }
+            .chat-handle-bar {
+                width: 40px;
+                height: 4px;
+                background: rgba(201,168,76,0.4);
+                border-radius: 2px;
+            }
+
+            /* Input più grande per tastiera mobile */
+            .chat-input { font-size: 16px !important; padding: 12px 14px; }
+            .chat-send-btn { padding: 12px 16px; font-size: 1rem; }
+            .chat-messages { font-size: 0.82rem; }
+
+            /* Nasconde header chat (sostituito dall'handle) */
+            .chat-header { display: none; }
+        }
+
+        @keyframes slideUp {
+            from { transform: translateY(100%); opacity: 0; }
+            to   { transform: translateY(0); opacity: 1; }
+        }
+
+        @keyframes popIn {
+            from { opacity: 0; transform: scale(0.75) rotateZ(-8deg); }
+            to   { opacity: 1; transform: scale(1) rotateZ(0deg); }
+        }
+
+        @keyframes slideIn {
+            from { opacity: 0; transform: translateY(6px); }
+            to   { opacity: 1; transform: translateY(0); }
+        }
+
+        @keyframes pulse {
+            0%, 100% { opacity: 1; transform: scale(1); }
+            50%       { opacity: 0.82; transform: scale(1.04); }
+        }
+    </style>
+</head>
+<body>
+    <div class="game-wrapper">
+        <div class="game-main">
+            <!-- Timer -->
+            <div class="timer-display" id="timerDisplay" style="display:none;">
+                <div class="timer-value" id="timerValue">10</div>
+            </div>
+
+            <!-- Header -->
+            <div class="game-header">
+                <h1>
+                    <i class="fas fa-dragon"></i> BLACKJACK <i class="fas fa-dragon"></i>
+                </h1>
+                <div class="game-info">
+                    <div class="info-item">
+                        <strong id="currentPlayerName">Giocatore</strong> — Round <span id="roundNumber">1</span>
+                    </div>
+                    <div class="info-item" id="currentTurnBadge" style="display:none;">
+                        <span class="current-player-badge">
+                            <i class="fas fa-crown me-1"></i>
+                            <span id="currentTurnName">Turno tuo</span>
+                        </span>
+                    </div>
+                    <div class="info-item">
+                        <i class="fas fa-coins" style="color:var(--gold);margin-right:4px;font-size:0.72rem;"></i>
+                        Saldo: <strong id="playerBalance">$1000</strong>
+                    </div>
+                    <button class="back-btn" onclick="goBackToLobby()">
+                        <i class="fas fa-arrow-left me-1"></i> Lobby
+                    </button>
+                </div>
+            </div>
+
+            <!-- Betting -->
+            <div class="betting-section" id="bettingSection" style="display:none;">
+                <h4><i class="fas fa-coins me-1"></i> Piazza la tua scommessa</h4>
+                <div class="bet-input-group">
+                    <input type="number" class="bet-input" id="betAmount" placeholder="Importo (min $10)" min="10" step="10">
+                    <button class="btn-bet" onclick="placeBet()">Scommetti</button>
+                    
+                </div>
+            </div>
+
+            <!-- Status -->
+            <div class="game-status" id="gameStatus" style="display:none;"></div>
+
+            <!-- Table -->
+            <div class="table-section">
+                <div class="dealer-section">
+                    <h5><i class="fas fa-hat-wizard me-1"></i> Banco</h5>
+                    <div class="cards-container" id="dealerCards"></div>
+                    <div class="score-display" id="dealerScore">Punteggio: 0</div>
+                </div>
+
+                <div class="players-cards-section" id="otherPlayersCards"></div>
+
+                <div class="player-section">
+                    <h5><i class="fas fa-user me-1"></i> Giocatore</h5>
+                    <div class="cards-container" id="playerCards"></div>
+                    <div class="score-display" id="playerScore">Punteggio: 0</div>
+                </div>
+            </div>
+
+            <!-- Actions -->
+            <div class="actions-section" id="actionsSection">
+                <button class="btn-action btn-hit" onclick="hitCard()" id="hitBtn" disabled>
+                    <i class="fas fa-plus me-1"></i> Hit
+                </button>
+                <button class="btn-action btn-stand" onclick="standButton()" id="standBtn" disabled>
+                    <i class="fas fa-stop me-1"></i> Stand
+                </button>
+                <button class="btn-action btn-double" onclick="doubleDown()" id="doubleBtn" disabled>
+                    <i class="fas fa-times me-1"></i> Double
+                </button>
+                <button class="btn-action btn-split" onclick="splitCards()" id="splitBtn" disabled>
+                    <i class="fas fa-code-branch me-1"></i> Split
+                </button>
+            </div>
+
+            <button class="btn-action" id="nextRoundBtn" onclick="nextRound()" style="display:none; align-self:center; margin-top:6px; background:linear-gradient(135deg,#b8892a,#d4a843); color:#1a0e02;">
+                <i class="fas fa-play me-1"></i> Prossimo Round
+            </button>
+        </div>
+
+        <!-- Chat Sidebar -->
+        <!-- Overlay chat mobile -->
+        <div class="chat-overlay" id="chatOverlay" onclick="toggleMobileChat()"></div>
+
+        <!-- Pulsante flottante chat mobile -->
+        <button class="chat-toggle-btn" id="chatToggleBtn" onclick="toggleMobileChat()" style="display:none;">
+            <i class="fas fa-comments"></i>
+            <span class="chat-badge" id="chatBadge">0</span>
+        </button>
+
+        <div class="chat-sidebar" id="chatSidebar">
+            <!-- Handle mobile per chiudere -->
+            <div class="chat-handle" onclick="toggleMobileChat()">
+                <div class="chat-handle-bar"></div>
+            </div>
+            <div class="chat-header">
+                <i class="fas fa-comments me-1"></i> Chat Partita
+            </div>
+            <div class="chat-messages" id="chatMessages">
+                <div class="chat-message system">💬 Benvenuto nel blackjack!</div>
+            </div>
+            <div class="chat-input-area">
+                <input type="text" class="chat-input" id="chatInput" placeholder="Scrivi...">
+                <button class="chat-send-btn" onclick="sendChatMessage()">
+                    <i class="fas fa-paper-plane"></i>
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <script src="https://cdn.socket.io/4.5.4/socket.io.min.js"></script>
+    <script>
+        let gameState = {
+            currentGame: JSON.parse(localStorage.getItem('currentGame') || '{}'),
+            currentPlayer: JSON.parse(localStorage.getItem('currentPlayer') || '{}'),
+            apiKey: JSON.parse(localStorage.getItem('authUser') || '{}').apiKey,
+            socket: null,
+            round: 1,
+            playerBalance: 1000,
+            currentBet: 0,
+            dealerCards: [],
+            playerCards: [],
+            dealerScore: 0,
+            playerScore: 0,
+            gameActive: false,
+            bettingActive: true,
+            allPlayers: [],
+            playersData: {},
+            currentPlayerTurn: null,
+            timerInterval: null,
+            timeRemaining: 10,
+            isMyTurn: false,
+            isSpectator: false
+        };
+
+        window.addEventListener('DOMContentLoaded', function() {
+            initializeGame();
+        });
+
+        function initializeGame() {
+            if (!gameState.currentGame.id || !gameState.currentPlayer.id) {
+                alert('Errore: Dati partita mancanti');
+                window.location.href = '/frontend/index.html';
+                return;
+            }
+
+            // Modalità singleplayer
+            const soloMode = localStorage.getItem('soloMode') === 'true';
+            if (soloMode) {
+                gameState.isSolo = true;
+                localStorage.removeItem('soloMode');
+                // Nascondi la lista giocatori, non serve in solo
+                const playersList = document.getElementById('playersList');
+                if (playersList) playersList.style.display = 'none';
+                // Messaggio di benvenuto solo
+                addChatMessage('Sistema', '🎯 Modalità singleplayer — Buona fortuna contro il dealer!');
+            }
+
+            updateUI();
+            initializeChat();
+            startBetting();
+        }
+
+        function updateUI() {
+            document.getElementById('currentPlayerName').textContent = gameState.currentPlayer.name || 'Giocatore';
+            document.getElementById('playerBalance').textContent = '$' + gameState.playerBalance;
+            document.getElementById('roundNumber').textContent = gameState.round;
+        }
+
+        const SUITS = ['♠️', '♥️', '♣️', '♦️'];
+        const VALUES = ['A', '2', '3', '4', '5', '6', '7', '8', '9', '10', 'J', 'Q', 'K'];
+
+        function createDeck() {
+            let deck = [];
+            for (let suit of SUITS) {
+                for (let value of VALUES) {
+                    deck.push({ value, suit });
+                }
+            }
+            return deck.sort(() => Math.random() - 0.5);
+        }
+
+        function calculateScore(cards) {
+            let score = 0;
+            let aces = 0;
+            for (let card of cards) {
+                if (card.value === 'A') { aces++; score += 11; }
+                else if (['J', 'Q', 'K'].includes(card.value)) { score += 10; }
+                else { score += parseInt(card.value); }
+            }
+            while (score > 21 && aces > 0) { score -= 10; aces--; }
+            return score;
+        }
+
+        function startBetting() {
+            gameState.bettingActive = true;
+            gameState.dealerCards = [];
+            gameState.playerCards = [];
+            document.getElementById('bettingSection').style.display = 'block';
+            document.getElementById('betAmount').value = '';
+            document.getElementById('betAmount').focus();
+            clearGameDisplay();
+            document.getElementById('gameStatus').style.display = 'none';
+        }
+
+        function placeBet() {
+            const betAmount = parseInt(document.getElementById('betAmount').value);
+            if (!betAmount || isNaN(betAmount) || betAmount < 10) { alert('La puntata minima è $10'); return; }
+            if (betAmount > gameState.playerBalance) { alert('Saldo insufficiente!'); return; }
+            if (gameState.socket && gameState.socket.connected) {
+                gameState.socket.emit('blackjack-bet', { gameId: gameState.currentGame.id, betAmount });
+            } else { alert('Connessione WebSocket non disponibile'); }
+        }
+
+        function clearBet() {
+            document.getElementById('betAmount').value = '';
+            document.getElementById('betAmount').focus();
+        }
+
+        function dealInitialCards() {
+            let deck = createDeck();
+            gameState.dealerCards = [deck.pop(), deck.pop()];
+            gameState.playerCards = [deck.pop(), deck.pop()];
+            gameState.dealerScore = calculateScore(gameState.dealerCards);
+            gameState.playerScore = calculateScore(gameState.playerCards);
+            gameState.gameActive = true;
+            displayCards();
+            enableButtons();
+            if (gameState.playerScore === 21) { standButton(); }
+        }
+
+        function displayCards() {
+            const dealerContainer = document.getElementById('dealerCards');
+            dealerContainer.innerHTML = '';
+            dealerContainer.appendChild(createCardElement(gameState.dealerCards[0]));
+            dealerContainer.appendChild(createCardElement({ value: '?', suit: '' }, true));
+
+            const playerContainer = document.getElementById('playerCards');
+            playerContainer.innerHTML = '';
+            for (let card of gameState.playerCards) {
+                playerContainer.appendChild(createCardElement(card));
+            }
+
+            document.getElementById('dealerScore').textContent = `Punteggio: ${gameState.dealerScore}`;
+            let playerScoreEl = document.getElementById('playerScore');
+            playerScoreEl.textContent = `Punteggio: ${gameState.playerScore}`;
+
+            if (gameState.playerScore > 21) {
+                playerScoreEl.classList.remove('blackjack'); playerScoreEl.classList.add('bust');
+            } else if (gameState.playerScore === 21) {
+                playerScoreEl.classList.add('blackjack'); playerScoreEl.classList.remove('bust');
+            } else {
+                playerScoreEl.classList.remove('blackjack', 'bust');
+            }
+        }
+
+        function displayAllPlayersCards() {
+            const container = document.getElementById('otherPlayersCards');
+            if (!container) return;
+            container.innerHTML = '';
+            for (let playerId in gameState.playersData) {
+                if (playerId === gameState.currentPlayer.id) continue;
+                const player = gameState.playersData[playerId];
+                const box = document.createElement('div');
+                box.className = 'other-player-box';
+                let sc = player.status || '';
+                let resultText = player.result ? `<div class="player-result">${player.result}</div>` : '';
+                box.innerHTML = `
+                    <div class="player-name">${player.name}</div>
+                    <div class="player-cards">
+                        ${player.cards.map(c => `<div class="player-card">${c.display || (c.value + c.suit)}</div>`).join('')}
+                    </div>
+                    <div class="player-score" style="color:${player.score > 21 ? '#e74c3c' : player.score === 21 ? '#2ecc71' : 'var(--gold)'}">Punteggio: ${player.score}</div>
+                    <div class="player-status ${sc}">${sc}</div>
+                    ${resultText}
+                `;
+                container.appendChild(box);
+            }
+        }
+
+        function createCardElement(card, hidden = false) {
+            const cardEl = document.createElement('div');
+            cardEl.className = 'card';
+            if (hidden) {
+                cardEl.classList.add('hidden');
+                cardEl.innerHTML = '<i class="fas fa-question"></i>';
+            } else {
+                let suitClass = 'clubs';
+                if (card.suit === 'H' || card.suit === 'D') suitClass = 'hearts';
+                else if (card.suit === 'S') suitClass = 'spades';
+                const suitSymbols = { 'S': '♠', 'H': '♥', 'D': '♦', 'C': '♣' };
+                const suitSymbol = suitSymbols[card.suit] || card.suit;
+                cardEl.classList.add(suitClass);
+                cardEl.innerHTML = `<div class="card-value">${card.value}</div><div class="card-suit">${suitSymbol}</div>`;
+            }
+            return cardEl;
+        }
+
+        function enableButtons() {
+            document.getElementById('hitBtn').disabled = false;
+            document.getElementById('standBtn').disabled = false;
+            if (gameState.playerCards.length === 2 && gameState.playerBalance >= gameState.currentBet)
+                document.getElementById('doubleBtn').disabled = false;
+            if (gameState.playerCards.length === 2 && gameState.playerCards[0].value === gameState.playerCards[1].value)
+                document.getElementById('splitBtn').disabled = false;
+        }
+
+        function disableButtons() {
+            ['hitBtn','standBtn','doubleBtn','splitBtn'].forEach(id => document.getElementById(id).disabled = true);
+        }
+
+        function hitCard() {
+            if (!gameState.socket || !gameState.socket.connected) return;
+            if (gameState.hasSplit && gameState.playingSplitHand) {
+                // Hit sulla seconda mano
+                gameState.socket.emit('blackjack-split-hit', gameState.currentGame.id);
+            } else {
+                // Hit normale
+                gameState.socket.emit('blackjack-hit', gameState.currentGame.id);
+            }
+        }
+
+        function standButton() {
+            if (!gameState.socket || !gameState.socket.connected) return;
+
+            if (gameState.hasSplit && !gameState.playingSplitHand) {
+                // Stand sulla mano principale → passa alla seconda mano
+                gameState.socket.emit('blackjack-stand', gameState.currentGame.id);
+                gameState.playingSplitHand = true;
+                addChatMessage('Sistema', `▶️ Ora gioca la seconda mano!`);
+                // Evidenzia la seconda mano
+                const splitSection = document.getElementById('splitHandCards');
+                if (splitSection) splitSection.parentElement.style.border = '2px solid #ffc107';
+                enableButtons();
+                document.getElementById('splitBtn').disabled = true;
+                document.getElementById('doubleBtn').disabled = true;
+            } else if (gameState.hasSplit && gameState.playingSplitHand) {
+                // Stand sulla seconda mano → fine turno
+                gameState.socket.emit('blackjack-split-stand', gameState.currentGame.id);
+                disableButtons();
+            } else {
+                // Stand normale senza split
+                gameState.socket.emit('blackjack-stand', gameState.currentGame.id);
+            }
+        }
+
+        function recordCustomMove(moveType, moveDetails = {}) {
+            if (gameState.socket && gameState.socket.connected)
+                gameState.socket.emit('blackjack-move', { gameId: gameState.currentGame.id, type: moveType, details: moveDetails });
+        }
+
+        function doubleDown() {
+            if (gameState.playerCards.length !== 2 || gameState.playerBalance < gameState.currentBet) return;
+            if (gameState.socket && gameState.socket.connected) {
+                gameState.socket.emit('blackjack-double', gameState.currentGame.id);
+                document.getElementById('doubleBtn').disabled = true;
+                document.getElementById('splitBtn').disabled = true;
+            } else { alert('Connessione WebSocket non disponibile'); }
+        }
+
+        function splitCards() {
+            const cardNumericValue = (card) => {
+                if (['J','Q','K'].includes(card.value)) return 10;
+                if (card.value === 'A') return 11;
+                return parseInt(card.value);
+            };
+            if (gameState.playerCards.length !== 2 || cardNumericValue(gameState.playerCards[0]) !== cardNumericValue(gameState.playerCards[1])) return;
+            if (gameState.playerBalance < gameState.currentBet) { alert('Saldo insufficiente per lo split!'); return; }
+            if (gameState.socket && gameState.socket.connected) {
+                gameState.socket.emit('blackjack-split', gameState.currentGame.id);
+                document.getElementById('splitBtn').disabled = true;
+                document.getElementById('doubleBtn').disabled = true;
+            } else { alert('Connessione WebSocket non disponibile'); }
+        }
+
+        function displaySplitHand() {
+            let splitContainer = document.getElementById('splitHandCards');
+            if (!splitContainer) {
+                splitContainer = document.createElement('div');
+                splitContainer.id = 'splitHandCards';
+                splitContainer.className = 'cards-container';
+                const splitSection = document.createElement('div');
+                splitSection.className = 'player-section mt-2';
+                splitSection.innerHTML = '<h5>✂️ Seconda Mano</h5>';
+                splitSection.appendChild(splitContainer);
+                document.querySelector('.player-section').after(splitSection);
+            }
+            splitContainer.innerHTML = '';
+            for (let card of gameState.splitHand || []) { splitContainer.appendChild(createCardElement(card)); }
+            let splitScoreEl = document.getElementById('splitScore');
+            if (!splitScoreEl) {
+                splitScoreEl = document.createElement('div');
+                splitScoreEl.id = 'splitScore';
+                splitScoreEl.className = 'score-display';
+                splitContainer.parentElement.appendChild(splitScoreEl);
+            }
+            splitScoreEl.textContent = `Punteggio: ${gameState.splitScore}`;
+        }
+
+        function dealCardToDealer() {
+            let deck = createDeck();
+            while (calculateScore(gameState.dealerCards) < 17) { gameState.dealerCards.push(deck.pop()); }
+            gameState.dealerScore = calculateScore(gameState.dealerCards);
+            const dealerContainer = document.getElementById('dealerCards');
+            dealerContainer.innerHTML = '';
+            for (let card of gameState.dealerCards) { dealerContainer.appendChild(createCardElement(card)); }
+            document.getElementById('dealerScore').textContent = `Punteggio: ${gameState.dealerScore}`;
+            return gameState.dealerScore;
+        }
+
+        function determineWinner() {
+            let result = ''; let winnings = 0;
+            if (gameState.playerScore > 21) { result = 'BUST - Hai perso! 🎭'; }
+            else if (gameState.dealerScore > 21) { result = 'BANCO BUST - Hai vinto! 🎉'; winnings = gameState.currentBet * 2; }
+            else if (gameState.playerScore > gameState.dealerScore) { result = 'Hai vinto! 🎉'; winnings = gameState.currentBet * 2; }
+            else if (gameState.playerScore < gameState.dealerScore) { result = 'Il banco ha vinto! 🎭'; }
+            else { result = 'Pareggio (Push)! ≈'; winnings = gameState.currentBet; }
+            gameState.playerBalance += winnings;
+            updateUI();
+            endRound(result);
+        }
+
+        function endRound(result) {
+            disableButtons();
+            const statusEl = document.getElementById('gameStatus');
+            statusEl.textContent = result;
+            statusEl.style.display = 'block';
+            statusEl.classList.remove('win', 'lose', 'push');
+            if (result.includes('Pareggio')) statusEl.classList.add('push');
+            else if (result.includes('vinto')) statusEl.classList.add('win');
+            else statusEl.classList.add('lose');
+            document.getElementById('nextRoundBtn').style.display = 'block';
+        }
+
+        function nextRound() { document.getElementById('nextRoundBtn').style.display = 'none'; }
+
+        function showSpectatorMode() {
+            gameState.isSpectator = true;
+            disableButtons();
+            document.getElementById('bettingSection').style.display = 'none';
+            let banner = document.getElementById('spectatorBanner');
+            if (!banner) {
+                banner = document.createElement('div');
+                banner.id = 'spectatorBanner';
+                banner.style.cssText = 'background:rgba(201,168,76,0.08);border:1px solid rgba(201,168,76,0.25);border-radius:4px;padding:9px 14px;text-align:center;margin-bottom:10px;color:var(--gold);font-family:Lato,sans-serif;font-weight:700;font-size:0.8rem;letter-spacing:1px;';
+                banner.innerHTML = '👀 Stai guardando la partita — Entrerai dal prossimo round';
+                document.querySelector('.game-main').prepend(banner);
+            }
+        }
+
+        function showPlayerMode(balance) {
+            gameState.isSpectator = false;
+            if (balance !== undefined) gameState.playerBalance = balance;
+            updateUI();
+            const banner = document.getElementById('spectatorBanner');
+            if (banner) banner.remove();
+        }
+
+        function clearGameDisplay() {
+            document.getElementById('dealerCards').innerHTML = '';
+            document.getElementById('playerCards').innerHTML = '';
+            document.getElementById('dealerScore').textContent = 'Punteggio: 0';
+            document.getElementById('playerScore').textContent = 'Punteggio: 0';
+        }
+
+        // ========== CHAT ==========
+        function initializeChat() {
+            if (gameState.socket) gameState.socket.disconnect();
+            if (!gameState.apiKey) return;
+
+            try {
+                gameState.socket = io(window.location.origin, { auth: { token: gameState.apiKey } });
+
+                gameState.socket.on('connect', () => {
+                    addChatMessage('Sistema', '✅ Connesso alla partita');
+                    gameState.socket.emit('join-lobby', gameState.currentGame.id);
+                });
+
+                gameState.socket.on('new-message', (message) => { addChatMessage(message.username, message.text); });
+                gameState.socket.on('player-joined', (data) => { addChatMessage('Sistema', `👤 ${data.username} è entrato nella partita`); updatePlayersList(); });
+                gameState.socket.on('start-game', () => { addChatMessage('Sistema', '🎮 La partita è iniziata!'); });
+                gameState.socket.on('player-bet', (data) => { addChatMessage('Sistema', `💰 ${data.playerName} ha scommesso $${data.bet}`); updatePlayersList(); });
+
+                gameState.socket.on('cards-dealt', (data) => {
+                    addChatMessage('Sistema', '🃏 Le carte sono state distribuite!');
+                    gameState.dealerCards = [data.dealerCard];
+                    gameState.playersData = {};
+                    for (let player of data.players) {
+                        gameState.playersData[player.id] = { name: player.name, cards: player.cards, score: player.score, status: player.status, bet: player.bet, id: player.id };
+                    }
+                    const myPlayer = data.players.find(p => p.id === gameState.currentPlayer.id);
+                    if (myPlayer) { gameState.playerCards = myPlayer.cards; gameState.playerScore = myPlayer.score; }
+                    displayCards(); displayAllPlayersCards(); enableButtons();
+                });
+
+                gameState.socket.on('player-hit', (data) => {
+                    if (gameState.playersData[data.playerId]) {
+                        gameState.playersData[data.playerId].cards.push(data.newCard);
+                        gameState.playersData[data.playerId].score = data.score;
+                        gameState.playersData[data.playerId].status = data.status;
+                    }
+                    if (data.playerId === gameState.currentPlayer.id) {
+                        if (gameState.playersData[data.playerId]) gameState.playerCards = [...gameState.playersData[data.playerId].cards];
+                        else gameState.playerCards.push(data.newCard);
+                        gameState.playerScore = data.score;
+                        displayCards();
+                        if (data.status === 'bust') endRound('BUST - Hai sforato! 🎭');
+                    } else { addChatMessage('Sistema', `${data.playerName} ha preso una carta (${data.score})`); }
+                    displayAllPlayersCards();
+                });
+
+                gameState.socket.on('player-stand', (data) => {
+                    if (gameState.playersData[data.playerId]) gameState.playersData[data.playerId].status = 'stand';
+                    if (data.playerId !== gameState.currentPlayer.id) addChatMessage('Sistema', `${data.playerName} ha stoppato (${data.score})`);
+                    displayAllPlayersCards();
+                });
+
+                gameState.socket.on('player-double', (data) => {
+                    if (gameState.playersData[data.playerId]) {
+                        gameState.playersData[data.playerId].cards.push(data.newCard);
+                        gameState.playersData[data.playerId].score = data.score;
+                        gameState.playersData[data.playerId].status = data.status;
+                    }
+                    if (data.playerId === gameState.currentPlayer.id) {
+                        // Usa playersData come fonte unica per evitare duplicati
+                        if (gameState.playersData[data.playerId]) {
+                            gameState.playerCards = [...gameState.playersData[data.playerId].cards];
+                        } else {
+                            gameState.playerCards.push(data.newCard);
+                        }
+                        gameState.playerScore = data.score;
+                        gameState.currentBet = data.newBet;
+                        gameState.playerBalance = data.balance;
+                        displayCards();
+                        updateUI();
+                        if (data.status === 'bust') endRound('BUST - Hai sforato! 🎭');
+                        else addChatMessage('Sistema', `✅ Double Down! Puntata raddoppiata a $${data.newBet}`);
+                    } else {
+                        addChatMessage('Sistema', `${data.playerName} ha fatto Double Down ($${data.newBet})`);
+                    }
+                    displayAllPlayersCards();
+                });
+
+                gameState.socket.on('player-split', (data) => {
+                    if (data.playerId === gameState.currentPlayer.id) {
+                        gameState.playerCards = data.hand1;
+                        gameState.playerScore = data.score1;
+                        gameState.splitHand = data.hand2;
+                        gameState.splitScore = data.score2;
+                        gameState.currentBet = data.bet;
+                        gameState.playerBalance = data.balance;
+                        gameState.hasSplit = true;
+                        gameState.playingSplitHand = false; // prima mano principale
+
+                        displayCards();
+                        displaySplitHand();
+                        updateUI();
+
+                        addChatMessage('Sistema', `✂️ Split eseguito! Mano 1: ${data.score1} | Mano 2: ${data.score2}`);
+                        addChatMessage('Sistema', `▶️ Gioca prima la mano principale, poi la seconda`);
+                        enableButtons();
+                        // Disabilita split e double sulla mano splittata
+                        document.getElementById('splitBtn').disabled = true;
+                        document.getElementById('doubleBtn').disabled = true;
+                    } else {
+                        addChatMessage('Sistema', `✂️ ${data.playerName} ha fatto Split`);
+                    }
+                    displayAllPlayersCards();
+                });
+
+                gameState.socket.on('player-split-hit', (data) => {
+                    if (data.playerId === gameState.currentPlayer.id) {
+                        gameState.splitHand.push(data.newCard);
+                        gameState.splitScore = data.splitScore;
+                        displaySplitHand();
+                        updateUI();
+                        if (data.splitStatus === 'bust') {
+                            addChatMessage('Sistema', `💥 BUST sulla seconda mano!`);
+                        }
+                    } else {
+                        addChatMessage('Sistema', `${data.playerName} ha pescato sulla 2a mano (${data.splitScore})`);
+                    }
+                });
+
+                gameState.socket.on('player-split-stand', (data) => {
+                    if (data.playerId === gameState.currentPlayer.id) {
+                        addChatMessage('Sistema', `🛑 Stand sulla seconda mano (${data.splitScore})`);
+                    } else {
+                        addChatMessage('Sistema', `${data.playerName} ha fatto stand sulla 2a mano`);
+                    }
+                });
+
+                gameState.socket.on('player-turn', (data) => {
+                    addChatMessage('Sistema', `📍 ${data.message}`);
+                    const badge = document.getElementById('currentTurnBadge');
+                    if (data.playerId === gameState.currentPlayer.id) {
+                        badge.style.display = 'inline-block';
+                        addChatMessage('Sistema', `⭐ È il tuo turno! Hai ${data.timeLimit} secondi`);
+                        enableButtons();
+                    } else { badge.style.display = 'none'; disableButtons(); }
+                });
+
+                gameState.socket.on('round-complete', (data) => {
+                    gameState.dealerCards = data.dealerCards; gameState.dealerScore = data.dealerScore;
+                    displayCards();
+                    if (data.dealerBust) addChatMessage('Sistema', `💥 Il banco ha sforato con ${data.dealerScore}!`);
+                    else addChatMessage('Sistema', `🃏 Il banco si ferma con ${data.dealerScore}`);
+                    for (let result of data.results) {
+                        if (gameState.playersData[result.playerId]) {
+                            gameState.playersData[result.playerId].status = result.result;
+                            gameState.playersData[result.playerId].result = result.message;
+                        }
+                    }
+                    for (let result of data.results) { addChatMessage('Sistema', result.message); }
+                    const playerResult = data.results.find(r => r.playerId === gameState.currentPlayer.id);
+                    if (playerResult) { gameState.playerBalance = playerResult.finalBalance; updateUI(); endRound(playerResult.message); }
+                    displayAllPlayersCards();
+                });
+
+                gameState.socket.on('joined-as-spectator', (data) => {
+                    addChatMessage('Sistema', data.message); showSpectatorMode();
+                    gameState.playersData = {};
+                    for (let p of data.currentPlayers) {
+                        gameState.playersData[p.id] = { name: p.name, cards: p.cards, score: p.score, status: p.status };
+                    }
+                    if (data.dealerCard) gameState.dealerCards = [data.dealerCard];
+                    displayAllPlayersCards();
+                });
+
+                gameState.socket.on('spectator-joined', (data) => { addChatMessage('Sistema', data.message); });
+
+                gameState.socket.on('new-round', (data) => {
+                    gameState.round = data.round; gameState.currentBet = 0;
+                    gameState.dealerCards = []; gameState.playerCards = [];
+                    gameState.dealerScore = 0; gameState.playerScore = 0;
+                    gameState.playersData = {}; gameState.splitHand = null; gameState.hasSplit = false;
+                    document.getElementById('nextRoundBtn').style.display = 'none';
+                    document.getElementById('gameStatus').style.display = 'none';
+                    const splitSection = document.getElementById('splitHandCards');
+                    if (splitSection) splitSection.parentElement.remove();
+                    const myData = data.players.find(p => p.id === gameState.currentPlayer.id);
+                    if (myData) {
+                        showPlayerMode(myData.balance);
+                        addChatMessage('Sistema', `🔄 ${data.message} Saldo: $${myData.balance}`);
+                        if (myData.balance <= 0) { addChatMessage('Sistema', '💸 Hai finito i soldi! Sei eliminato.'); goBackToLobby(); return; }
+                    } else { showPlayerMode(500); addChatMessage('Sistema', `🎉 ${data.message} Sei entrato con $500!`); }
+                    clearGameDisplay(); startBetting();
+                });
+
+                gameState.socket.on('error', (data) => { alert('Errore: ' + data.message); addChatMessage('Sistema', '❌ ' + data.message); });
+
+                gameState.socket.on('game-deleted', (data) => {
+                    addChatMessage('Sistema', `⛔ ${data.message}`);
+                    setTimeout(() => { alert(data.message); setTimeout(() => { window.location.href = '/frontend/index.html'; }, 500); }, 1000);
+                });
+
+                gameState.socket.on('player-abandoned', (data) => {
+                    addChatMessage('Sistema', `👋 ${data.message}`);
+                    displayAllPlayersCards(); updatePlayersList();
+                });
+
+                gameState.socket.on('game-terminated', (data) => {
+                    addChatMessage('Sistema', `⛔ ${data.message}`);
+                    setTimeout(() => { alert(`${data.host} ha terminato la partita!\n\nSarai rimandato alla schermata principale...`); setTimeout(() => { window.location.href = '/frontend/index.html'; }, 500); }, 1000);
+                });
+
+                gameState.socket.on('game-closed', (data) => {
+                    addChatMessage('Sistema', data.message);
+                    setTimeout(() => { alert('La partita è terminata!\n\nSarai rimandato alla schermata principale...'); setTimeout(() => { window.location.href = '/frontend/index.html'; }, 500); }, 1000);
+                });
+
+                gameState.socket.on('player-left', (data) => {
+                    addChatMessage('Sistema', `👋 ${data.message} (${data.playerCount} giocatori rimasti)`);
+                    updatePlayersList();
+                });
+
+                document.getElementById('chatInput').addEventListener('keypress', function(e) {
+                    if (e.key === 'Enter') { e.preventDefault(); sendChatMessage(); }
+                });
+            } catch (error) { console.error('Chat error:', error); }
+        }
+
+        function sendChatMessage() {
+            const input = document.getElementById('chatInput');
+            const text = input.value.trim();
+            if (!text || !gameState.socket) return;
+            gameState.socket.emit('send-message', { gameId: gameState.currentGame.id, text });
+            input.value = '';
+        }
+
+        // ── MOBILE CHAT TOGGLE ──
+        let unreadCount = 0;
+        let isMobile = () => window.innerWidth <= 540;
+
+        function toggleMobileChat() {
+            if (!isMobile()) return;
+            const sidebar = document.getElementById('chatSidebar');
+            const overlay = document.getElementById('chatOverlay');
+            const isOpen = sidebar.classList.contains('mobile-open');
+
+            if (isOpen) {
+                sidebar.classList.remove('mobile-open');
+                overlay.classList.remove('visible');
+            } else {
+                sidebar.classList.add('mobile-open');
+                overlay.classList.add('visible');
+                // Reset badge quando si apre la chat
+                unreadCount = 0;
+                const badge = document.getElementById('chatBadge');
+                badge.classList.remove('visible');
+                badge.textContent = '0';
+                // Scrolla in fondo
+                const msgs = document.getElementById('chatMessages');
+                msgs.scrollTop = msgs.scrollHeight;
+            }
+        }
+
+        // Mostra pulsante flottante solo su mobile
+        function initMobileChat() {
+            const btn = document.getElementById('chatToggleBtn');
+            if (isMobile()) {
+                btn.style.display = 'flex';
+            } else {
+                btn.style.display = 'none';
+            }
+        }
+
+        window.addEventListener('resize', initMobileChat);
+        window.addEventListener('DOMContentLoaded', initMobileChat);
+
+        function addChatMessage(username, text) {
+            const container = document.getElementById('chatMessages');
+            const el = document.createElement('div');
+            el.className = 'chat-message';
+            if (username === 'Sistema') {
+                el.classList.add('system');
+                el.textContent = text;
+            } else {
+                el.innerHTML = `<div class="chat-message-user">${username}</div><div>${text}</div>`;
+            }
+            container.appendChild(el);
+            container.scrollTop = container.scrollHeight;
+
+            // Badge notifica su mobile se la chat è chiusa
+            if (isMobile() && !document.getElementById('chatSidebar').classList.contains('mobile-open')) {
+                unreadCount++;
+                const badge = document.getElementById('chatBadge');
+                badge.textContent = unreadCount > 9 ? '9+' : unreadCount;
+                badge.classList.add('visible');
+            }
+        }
+
+        function updatePlayersList() {
+            const container = document.getElementById('playersContainer');
+            container.innerHTML = '';
+            for (let player of gameState.currentGame.players || []) {
+                const el = document.createElement('div');
+                el.className = 'player-item';
+                el.innerHTML = `<span class="player-name">${player.name}</span><span class="player-score" id="score-${player.id}">$1000</span>`;
+                container.appendChild(el);
+            }
+        }
+
+        function goBackToLobby() {
+            if (gameState.socket) {
+                let responseReceived = false;
+                const timeout = setTimeout(() => {
+                    if (!responseReceived) { gameState.socket.disconnect(); window.location.href = '/frontend/index.html'; }
+                }, 3000);
+                gameState.socket.emit('leave-lobby', gameState.currentGame.id, (response) => {
+                    responseReceived = true;
+                    clearTimeout(timeout);
+                    gameState.socket.disconnect();
+                    window.location.href = '/frontend/index.html';
+                });
+            } else { window.location.href = '/frontend/index.html'; }
+        }
+    </script>
+</body>
+</html>
