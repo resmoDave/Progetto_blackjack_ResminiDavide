@@ -11,7 +11,7 @@ import authRoutes from './routes/auth.js';
 import gameRoutes from './routes/games.js';
 import { apiKeyAuth } from './middleware/auth.js';
 import { getRunningGames, getGameByCode, registerUser, getUserByUsername, getUserByApiKey, getGameById, addMessageToGame, removePlayerFromGame, terminateGame, addMoveToGame, deleteGame } from './db/database.js';
-import { createDeck, calculateScore, determineWinner, completeDealerTurn, cardToWeb, isBlackjack } from './games/blackjack.js';
+import { createDeck, calculateScore, determineWinner, completeDealerTurn, cardToWeb, isBlackjack } from '/workspaces/GameApi/static/games/blackjack.js';
 
 const __dirname = dirname(fileURLToPath(import.meta.url));
 const app = express();

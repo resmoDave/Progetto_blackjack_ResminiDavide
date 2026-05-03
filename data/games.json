@@ -80,8 +80,77 @@
           "password": "$2a$10$WxXM8cgsBJyz/YTzwKieCuHUzHRxt3QCwLkIT.3EhhJVa8O3rdSSK",
           "apiKey": "0f5b03ac-0b84-463b-afc8-23a18d0cac3ca14aa4b995cd4f5b8b6a06ef2763c424",
           "createdAt": "2026-04-27T08:18:07.929Z"
+        },
+        {
+          "id": "b42bcb62-23f1-4b45-9f66-3987b3f63741",
+          "username": "ciao007",
+          "password": "$2a$10$ZX4pVAM82BpNuWlXQzMEZu2b/QHtUUmrbvsXlORODHJnLH/HKS7Qm",
+          "apiKey": "59178214-992c-40f4-b2f9-1faff1fc3ef6a8210e664b3a4fddb37d6c62719c7c16",
+          "createdAt": "2026-04-27T09:09:39.437Z"
+        },
+        {
+          "id": "e1d9107a-af3b-4e0e-be80-ac5a7a7b19f3",
+          "username": "acul",
+          "password": "$2a$10$6crTe8TD3ce2a1vUhgkFM.zRVQtx5StwCmXq8Tn9ory6/AjFhMxJ.",
+          "apiKey": "abfc06c8-b608-41cc-8fb2-876c40b68dd7724fe49af50c47319eedfd0d2e640460",
+          "createdAt": "2026-04-27T18:17:54.220Z"
+        },
+        {
+          "id": "c6879f85-8c81-40d7-9433-26cbb725da4d",
+          "username": "telefonoVecchio",
+          "password": "$2a$10$ur0qCevVNSOnzxcUTRKdeut9k68x3UWCuzSSTg5pBYcS6d21TRsJy",
+          "apiKey": "2b5d30f8-391c-4d09-9d00-be667c566c51415c39bc8b3445ba99777bec331a877e",
+          "createdAt": "2026-04-27T18:59:00.408Z"
         }
       ]
+    },
+    {
+      "id": "08c4d605-4779-4e58-b928-4818fdd2e1c5",
+      "code": "TTYBFF",
+      "name": "Tavolo principale",
+      "ownerId": "07ce3c40-be4d-4b46-bbe6-407f47669f0d",
+      "solo": false,
+      "players": [
+        {
+          "id": "07ce3c40-be4d-4b46-bbe6-407f47669f0d",
+          "name": "Davide",
+          "joinedAt": "2026-04-30T14:33:15.422Z"
+        },
+        {
+          "id": "ca383b51-8b8e-4e12-a72a-8405bcb40124",
+          "name": "Marco",
+          "joinedAt": "2026-04-30T14:33:39.417Z"
+        }
+      ],
+      "moves": [
+        {
+          "id": "10a39d92-b9de-471d-ab51-1ce738fe9f1c",
+          "playerId": "07ce3c40-be4d-4b46-bbe6-407f47669f0d",
+          "data": {
+            "type": "stand",
+            "playerName": "Davide",
+            "score": 20,
+            "status": "stand"
+          },
+          "timestamp": "2026-04-30T14:33:59.105Z"
+        },
+        {
+          "id": "3c8733d7-b058-4f22-b1b8-be94deb319ed",
+          "playerId": "ca383b51-8b8e-4e12-a72a-8405bcb40124",
+          "data": {
+            "type": "stand",
+            "playerName": "Marco",
+            "score": 16,
+            "status": "stand"
+          },
+          "timestamp": "2026-04-30T14:34:02.735Z"
+        }
+      ],
+      "messages": [],
+      "gameData": {},
+      "status": "active",
+      "createdAt": "2026-04-30T14:33:15.422Z",
+      "updatedAt": "2026-04-30T14:34:02.735Z"
     }
   ]
 }
